@@ -82,13 +82,13 @@ def detect_invention(
         resp = client.post(
             f"{settings.openai_base_url.rstrip('/')}/chat/completions",
             headers=headers,
-            json=payload,
+            json=payload,  # type: ignore[arg-type]
             timeout=120,
         )
         resp.raise_for_status()
         data = resp.json()
         content = data["choices"][0]["message"]["content"]
-        parsed = json.loads(content)
+        parsed: dict[str, Any] = json.loads(content)
         return parsed
     except Exception as exc:  # pragma: no cover
         # Graceful degradation

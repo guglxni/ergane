@@ -4,7 +4,6 @@ Sends OpenClaw notification for a detected invention.
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 

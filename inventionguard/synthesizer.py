@@ -75,13 +75,13 @@ def synthesize(
         resp = requests.post(
             f"{settings.openai_base_url.rstrip('/')}/chat/completions",
             headers=headers,
-            json=payload,
+            json=payload,  # type: ignore[arg-type]
             timeout=120,
         )
         resp.raise_for_status()
         data = resp.json()
         content = data["choices"][0]["message"]["content"]
-        parsed = json.loads(content)
+        parsed: dict[str, Any] = json.loads(content)
         parsed.setdefault("overall_similarity_score", 50.0)
         parsed.setdefault("risk_assessment", "POSSIBLY_NOVEL")
         parsed.setdefault("draft_independent_claim", "1. A method comprising... [DRAFT PLACEHOLDER]")

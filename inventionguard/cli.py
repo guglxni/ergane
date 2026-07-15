@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import json
-import os
-import sys
-import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 from rich.console import Console
@@ -34,8 +31,8 @@ LEGAL_DISCLAIMER = (
 
 @app.command()
 def scan(
-    since: Optional[str] = typer.Option("HEAD~1", "--since", help="Commit range start (git ref)"),
-    to: Optional[str] = typer.Option("HEAD", "--to", help="Commit range end (git ref)"),
+    since: str = typer.Option("HEAD~1", "--since", help="Commit range start (git ref)"),
+    to: str = typer.Option("HEAD", "--to", help="Commit range end (git ref)"),
     repo_path: Optional[Path] = typer.Option(None, "--repo", help="Path to git repository (default: cwd)"),
     output_json: bool = typer.Option(False, "--json", help="Output raw JSON instead of rich UI"),
     skip_notify: bool = typer.Option(False, "--skip-notify", help="Skip OpenClaw/GBRAIN notifications"),
@@ -50,7 +47,7 @@ def scan(
         console.print("[yellow]No code changes detected in the specified range.[/yellow]")
         raise typer.Exit(0)
 
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
 
     for diff_entry in diffs:
         commit_hash = diff_entry["commit_hash"]
@@ -151,7 +148,7 @@ def analyze(
         console.print(table)
 
 
-def _render_result(result: dict) -> None:
+def _render_result(result: dict[str, Any]) -> None:
     detection = result["detection"]
     synthesis = result["synthesis"]
 

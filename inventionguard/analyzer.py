@@ -23,7 +23,7 @@ def get_commit_diffs(repo_path: str, since: str, to: str) -> list[dict[str, Any]
     to_commit = repo.resolve_refish(to)[0]
 
     diffs: list[dict[str, Any]] = []
-    for commit in repo.walk(to_commit.id, pygit2.GIT_SORT_TIME):
+    for commit in repo.walk(to_commit.id, pygit2.GIT_SORT_TIME):  # type: ignore[arg-type]
         if commit.id == since_commit.id:
             break
 
@@ -32,16 +32,30 @@ def get_commit_diffs(repo_path: str, since: str, to: str) -> list[dict[str, Any]
             continue
 
         diff = repo.diff(parent, commit)
-        diff_text = diff.text
+        diff_text_parts: list[str] = []
+        for patch in diff:
+            if patch is None:
+                continue
+            patch_text = patch.text
+            if patch_text:
+                diff_text_parts.append(patch_text)
+        diff_text = "\n".join(diff_text_parts)
         if not diff_text.strip():
             continue
 
         files_changed: list[str] = []
         for patch in diff:
-            if patch.delta.new_file.path:
-                files_changed.append(patch.delta.new_file.path)
-            elif patch.delta.old_file.path:
-                files_changed.append(patch.delta.old_file.path)
+            if patch is None:
+                continue
+            delta = patch.delta
+            if delta is None:
+                continue
+            new_path = delta.new_file.path
+            old_path = delta.old_file.path
+            if new_path:
+                files_changed.append(new_path)
+            elif old_path:
+                files_changed.append(old_path)
 
         diffs.append({
             "commit_hash": str(commit.id),
@@ -67,9 +81,18 @@ def get_file_diff(repo_path: str, file_path: str) -> str:
     diff = repo.diff(parent, head)
     out_lines: list[str] = []
     for patch in diff:
-        path = patch.delta.new_file.path or patch.delta.old_file.path
-        if path == file_path or Path(path).name == Path(file_path).name:
-            out_lines.append(patch.text)
+        if patch is None:
+            continue
+        delta = patch.delta
+        if delta is None:
+            continue
+        new_path = delta.new_file.path
+        old_path = delta.old_file.path
+        path = new_path or old_path
+        if path and (path == file_path or Path(path).name == Path(file_path).name):
+            pt = patch.text
+            if pt:
+                out_lines.append(pt)
 
     return "\n".join(out_lines)
 
@@ -103,7 +126,8 @@ def get_graphify_subgraph(repo_path: str, files_changed: list[str]) -> dict[str,
 
         if result.returncode == 0 and result.stdout.strip():
             try:
-                return json.loads(result.stdout)
+                data: dict[str, Any] = json.loads(result.stdout)
+                return data
             except json.JSONDecodeError:
                 return {"raw": result.stdout, "nodes": [], "edges": []}
         else:

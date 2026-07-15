@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 import subprocess
 from typing import Any
 
 import requests
 
-from inventionguard.config import settings
 
 
 def build_coral_sql(query_text: str, top_k: int = 10) -> str:
@@ -66,7 +64,6 @@ def search_prior_art(
             # Simple parsing of Coral tabular output
             # In production, use coral sql --format json when available
             lines = coral_output.stdout.strip().splitlines()
-            headers = [h.strip() for h in lines[0].split("|") if h.strip()]
             for line in lines[2:]:
                 parts = [p.strip() for p in line.split("|") if p.strip()]
                 if len(parts) >= 3:

@@ -1,0 +1,132 @@
+{
+  ".github/scripts/create-issue.js": {
+    "mtime": 1784150076.0290012,
+    "ast_hash": "3860e13b07313e3906f4f31a8e9e2c10",
+    "semantic_hash": ""
+  },
+  "demo_code/cache_invalidator.py": {
+    "mtime": 1784150187.3645093,
+    "ast_hash": "dd3c3d3256e21eff53b7848efa58cb42",
+    "semantic_hash": ""
+  },
+  "inventionguard/__init__.py": {
+    "mtime": 1784150046.4799304,
+    "ast_hash": "55ada2b347de90490f50d1a7d33c8ae7",
+    "semantic_hash": ""
+  },
+  "inventionguard/analyzer.py": {
+    "mtime": 1784150204.3319342,
+    "ast_hash": "6a01ad7cb5b871c02459438b615b7b86",
+    "semantic_hash": ""
+  },
+  "inventionguard/cli.py": {
+    "mtime": 1784150001.3727603,
+    "ast_hash": "5cc3919f93ea3ee19474e42577c27d36",
+    "semantic_hash": ""
+  },
+  "inventionguard/config.py": {
+    "mtime": 1784150025.7507217,
+    "ast_hash": "e8285dbb12c8f1453d988b7807c8c703",
+    "semantic_hash": ""
+  },
+  "inventionguard/detector.py": {
+    "mtime": 1784150025.7259676,
+    "ast_hash": "ec1fb72936b5537be3bc28bfa73fd882",
+    "semantic_hash": ""
+  },
+  "inventionguard/notifier.py": {
+    "mtime": 1784150046.485213,
+    "ast_hash": "7cc625d62cb9b1e6ba9c3192592643cc",
+    "semantic_hash": ""
+  },
+  "inventionguard/prior_art.py": {
+    "mtime": 1784150046.4134696,
+    "ast_hash": "03bd2f2ded05a09f07745f7aa5176109",
+    "semantic_hash": ""
+  },
+  "inventionguard/synthesizer.py": {
+    "mtime": 1784150046.4716208,
+    "ast_hash": "8cf7c98143a7260ba37f12da1fa1c16f",
+    "semantic_hash": ""
+  },
+  "pyproject.toml": {
+    "mtime": 1784149402.880349,
+    "ast_hash": "83f2e750ccdfd97d58cf84c0c37d5cef",
+    "semantic_hash": ""
+  },
+  "skills/detect_invention.py": {
+    "mtime": 1784150129.2281766,
+    "ast_hash": "5f73b8612642ce767261842cea7d182b",
+    "semantic_hash": ""
+  },
+  "skills/draft_claim.py": {
+    "mtime": 1784150129.25225,
+    "ast_hash": "7e72ad89fd4fb5047bb3473a6aed7a23",
+    "semantic_hash": ""
+  },
+  "skills/notify_team.py": {
+    "mtime": 1784150129.2335339,
+    "ast_hash": "4ae8319374a58811ca96e59bd225bf5c",
+    "semantic_hash": ""
+  },
+  "skills/scan_repo.py": {
+    "mtime": 1784150129.2163398,
+    "ast_hash": "49a432c425f82826faaa6afdf015b945",
+    "semantic_hash": ""
+  },
+  "skills/search_prior_art.py": {
+    "mtime": 1784150129.2442393,
+    "ast_hash": "e37e21a5a360b31fdbf648ed3f40795e",
+    "semantic_hash": ""
+  },
+  ".github/workflows/inventionguard.yml": {
+    "mtime": 1784150083.5036273,
+    "ast_hash": "c58f3ace18631738a5fe9082126e902e",
+    "semantic_hash": ""
+  },
+  "MEMORY.md": {
+    "mtime": 1784150092.7012782,
+    "ast_hash": "e23c88811d3992bf03b9e880858cf32a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1784149366.3664224,
+    "ast_hash": "522a78d04db5388d6609bbfea7b8601d",
+    "semantic_hash": ""
+  },
+  "RULES.md": {
+    "mtime": 1784150092.6591377,
+    "ast_hash": "37e09281e3f2f61036426e5b50d3a4ee",
+    "semantic_hash": ""
+  },
+  "SOUL.md": {
+    "mtime": 1784150092.6872842,
+    "ast_hash": "aedb87f05cda9f011aaa75320d2a5374",
+    "semantic_hash": ""
+  },
+  "coral_sources/epo.yaml": {
+    "mtime": 1784149895.6746287,
+    "ast_hash": "a107f0cf00f0781d52bc34b80ba1211d",
+    "semantic_hash": ""
+  },
+  "coral_sources/local_patents.yaml": {
+    "mtime": 1784149951.5465813,
+    "ast_hash": "c44d4a25bb52b8f0239fbfe77e79c607",
+    "semantic_hash": ""
+  },
+  "coral_sources/pqai.yaml": {
+    "mtime": 1784149438.4951239,
+    "ast_hash": "228061aacb327b075480ca31090ae6de",
+    "semantic_hash": ""
+  },
+  "coral_sources/uspto.yaml": {
+    "mtime": 1784149906.7298136,
+    "ast_hash": "ca90167eec2378aea0c1ae9f040c32fd",
+    "semantic_hash": ""
+  },
+  "skills/patent_notify.yaml": {
+    "mtime": 1784150129.2251458,
+    "ast_hash": "6af095ba0f0f2279cc83d5918247b764",
+    "semantic_hash": ""
+  }
+}

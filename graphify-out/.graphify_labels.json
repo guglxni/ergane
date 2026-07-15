@@ -1,0 +1,16 @@
+{
+  "0": "VectorClock",
+  "1": "scan",
+  "2": "detect_invention",
+  "3": "notifier.py",
+  "4": "InventionGuard",
+  "5": "prior_art.py",
+  "6": "synthesizer.py",
+  "7": "MEMORY.md — InventionGuard",
+  "8": "config.py",
+  "9": "SOUL.md — InventionGuard",
+  "10": "create-issue.js",
+  "11": "__init__.py",
+  "12": "RULES.md",
+  "13": "inventionguard"
+}
