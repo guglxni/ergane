@@ -1,0 +1,51 @@
+name: pqai
+version: 0.1.0
+dsl_version: 3
+backend: http
+inputs:
+  PQAI_API_KEY:
+    kind: secret
+    required: false
+base_url: "https://search.projectpq.ai/api"
+auth:
+  type: HeaderAuth
+  headers:
+    - name: Authorization
+      from: bearer
+      key: PQAI_API_KEY
+      required: false
+table_functions:
+  - name: search_patents
+    description: Semantic prior art search
+    kind: search
+    search_limits:
+      max_results: 50
+    arguments:
+      - name: query
+        type: Utf8
+        required: true
+      - name: top_k
+        type: Int64
+        required: false
+        default: 10
+    result_columns:
+      - name: id
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: abstract
+        type: Utf8
+      - name: score
+        type: Float64
+      - name: publication_number
+        type: Utf8
+    request:
+      method: POST
+      path: /search
+      body:
+        query: "{{arg.query}}"
+        top_n: "{{arg.top_k}}"
+    response:
+      rows_path: [results]
+    test_queries:
+      - SELECT * FROM pqai.search_patents(query => 'vector clock cache invalidation', top_k => 5)

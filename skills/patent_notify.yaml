@@ -1,0 +1,43 @@
+# skills/patent_notify.yaml
+name: patent_notify
+version: 1.0.0
+description: Notify team of detected inventions via OpenClaw
+endpoints:
+  - path: /webhook/invention
+    method: POST
+    handler: |
+      {
+        "blocks": [
+          {
+            "type": "header",
+            "text": "🧠 Invention Detected: {{payload.invention_title}}"
+          },
+          {
+            "type": "section",
+            "fields": [
+              {"type": "mrkdwn", "text": "*Novelty Score:*\n{{payload.novelty_score}}/1.0"},
+              {"type": "mrkdwn", "text": "*Risk:*\n{{payload.risk_assessment}}"},
+              {"type": "mrkdwn", "text": "*Engineer:*\n{{payload.inventor}}"},
+              {"type": "mrkdwn", "text": "*Commit:*\n<{{payload.commit_url}}|{{payload.commit_hash_short}}>"}
+            ]
+          },
+          {
+            "type": "section",
+            "text": "*Technical Problem:*\n{{payload.technical_problem}}"
+          },
+          {
+            "type": "section",
+            "text": "*Closest Prior Art:*\n{{payload.closest_patent_title}} ({{payload.closest_patent_number}}) — Similarity: {{payload.overall_similarity_score}}%"
+          },
+          {
+            "type": "actions",
+            "elements": [
+              {"type": "button", "text": "Review Draft Claim", "url": "{{payload.github_pr_url}}", "style": "primary"},
+              {"type": "button", "text": "Dismiss", "url": "{{payload.dismiss_url}}", "style": "danger"}
+            ]
+          }
+        ]
+      }
+channels:
+  - slack
+  - discord

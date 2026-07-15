@@ -1,0 +1,84 @@
+name: uspto
+version: 0.1.0
+dsl_version: 3
+backend: http
+description: USPTO Open Data Portal patent search
+base_url: "https://developer.uspto.gov/api/v1"
+
+inputs:
+  USPTO_API_KEY:
+    kind: secret
+    hint: developer.uspto.gov
+    required: false
+
+auth:
+  type: HeaderAuth
+  headers:
+    - name: X-Api-Key
+      from: template
+      template: "{{input.USPTO_API_KEY}}"
+
+test_queries:
+  - SELECT patent_number, title, abstract FROM uspto.patents WHERE q = 'machine learning' LIMIT 5
+
+tables:
+  - name: patents
+    description: USPTO granted patents
+    request:
+      method: GET
+      path: /patents/search
+    filters:
+      - name: q
+        mode: contains
+        required: true
+    pagination:
+      mode: offset
+      offset_param: start
+      offset_start: 0
+      page_size:
+        default: 25
+        max: 100
+        query_param: rows
+    response:
+      rows_path: [patents]
+    columns:
+      - name: patent_number
+        type: Utf8
+        expr:
+          kind: path
+          path: [patent_number]
+      - name: title
+        type: Utf8
+        expr:
+          kind: path
+          path: [title]
+      - name: abstract
+        type: Utf8
+        expr:
+          kind: path
+          path: [abstract]
+      - name: assignee
+        type: Utf8
+        expr:
+          kind: path
+          path: [assignee]
+      - name: filing_date
+        type: Timestamp
+        expr:
+          kind: path
+          path: [filing_date]
+      - name: grant_date
+        type: Timestamp
+        expr:
+          kind: path
+          path: [grant_date]
+      - name: claims
+        type: Utf8
+        expr:
+          kind: path
+          path: [claims]
+      - name: ipc_codes
+        type: Utf8
+        expr:
+          kind: path
+          path: [ipc_codes]

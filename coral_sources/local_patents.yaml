@@ -1,0 +1,35 @@
+name: local_patents
+version: 0.1.0
+dsl_version: 3
+backend: file
+description: Local USPTO bulk patent data
+
+inputs:
+  LOCAL_PATENT_PATH:
+    kind: variable
+    default: /Users/aaryanguglani/inventionguard/data/uspto_grants.parquet
+
+test_queries:
+  - SELECT patent_number, title FROM local_patents.grants LIMIT 5
+
+tables:
+  - name: grants
+    description: Local USPTO bulk data
+    format: parquet
+    source:
+      location: "file://{{input.LOCAL_PATENT_PATH}}"
+    columns:
+      - name: patent_number
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: abstract
+        type: Utf8
+      - name: claims
+        type: Utf8
+      - name: assignee
+        type: Utf8
+      - name: filing_date
+        type: Timestamp
+      - name: ipc_codes
+        type: Utf8

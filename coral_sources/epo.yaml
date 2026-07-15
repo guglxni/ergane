@@ -1,0 +1,66 @@
+name: epo
+version: 0.1.0
+dsl_version: 3
+backend: http
+description: EPO Open Patent Services (OPS) patent search
+base_url: "https://ops.epo.org/3.2"
+
+inputs:
+  EPO_CONSUMER_KEY:
+    kind: secret
+    hint: developers.epo.org
+  EPO_CONSUMER_SECRET:
+    kind: secret
+    hint: developers.epo.org
+
+auth:
+  type: BasicAuth
+  username: "{{input.EPO_CONSUMER_KEY}}"
+  password: "{{input.EPO_CONSUMER_SECRET}}"
+
+test_queries:
+  - SELECT doc_number, title FROM epo.patents WHERE q = 'ti=distributed cache' LIMIT 5
+
+tables:
+  - name: patents
+    description: EPO patent documents
+    request:
+      method: GET
+      path: /rest-services/published-data/search
+    filters:
+      - name: q
+        mode: contains
+        required: true
+    response:
+      rows_path: [ops:world-patent-data, ops:biblio-search, ops:search-result, exchange-documents, exchange-document]
+    columns:
+      - name: doc_number
+        type: Utf8
+        expr:
+          kind: path
+          path: [doc_number]
+      - name: title
+        type: Utf8
+        expr:
+          kind: path
+          path: [title]
+      - name: abstract
+        type: Utf8
+        expr:
+          kind: path
+          path: [abstract]
+      - name: applicant
+        type: Utf8
+        expr:
+          kind: path
+          path: [applicant]
+      - name: publication_date
+        type: Timestamp
+        expr:
+          kind: path
+          path: [publication_date]
+      - name: family_id
+        type: Utf8
+        expr:
+          kind: path
+          path: [family_id]
