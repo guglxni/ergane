@@ -1,12 +1,27 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
 *.egg-info/
+
+# Testing
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+
+# Ergane state (generated)
+.github/ergane-state.md
+
+# Environment
 .env
-*.parquet
-!data/uspto_grants.parquet
-graphify-out/
-.DS_Store
