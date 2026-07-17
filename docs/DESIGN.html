@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergane — Design Document</title>
+<style>
+  :root { --bg:#0d1117; --fg:#c9d1d9; --accent:#58a6ff; --accent2:#7ee787; --warn:#f85149; --muted:#8b949e; --code:#161b22; --border:#30363d; }
+  body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; margin:0; padding:0; }
+  .container { max-width:1100px; margin:0 auto; padding:2rem; }
+  h1 { color:var(--accent); font-size:2.2rem; margin:0; }
+  h2 { color:var(--accent2); border-bottom:1px solid var(--border); padding-bottom:.3rem; margin-top:2.5rem; }
+  h3 { color:var(--accent); margin-top:1.8rem; }
+  h4 { color:#79c0ff; }
+  .badge { display:inline-block; padding:.12rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; margin-right:.3rem; }
+  .badge-ui { background:#238636; color:#fff; }
+  .badge-api { background:#1f6feb; color:#fff; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:.9rem; }
+  th, td { border:1px solid var(--border); padding:.5rem .75rem; text-align:left; }
+  th { background:var(--code); color:var(--accent); font-weight:600; }
+  code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:.15rem .35rem; border-radius:4px; font-size:.85rem; }
+  pre { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:1rem; overflow-x:auto; border:1px solid var(--border); border-radius:6px; }
+  .mockup { background:#1c2128; border:1px solid var(--border); border-radius:8px; padding:1rem; margin:1rem 0; font-family:'SFMono-Regular',monospace; font-size:.85rem; }
+  .mockup-header { color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:.5rem; margin-bottom:.5rem; }
+  .slack-block { background:#1a1d21; border-radius:4px; padding:.75rem; margin:.5rem 0; border-left:4px solid #36c5f0; }
+  .slack-header { font-weight:700; color:#fff; }
+  .slack-field { display:inline-block; width:48%; margin:.2rem 0; }
+  .slack-label { color:#9e9e9e; font-size:.8rem; }
+  .slack-value { color:#e0e0e0; }
+  .toc { position:sticky; top:1rem; float:right; width:250px; margin-left:2rem; background:var(--code); border:1px solid var(--border); border-radius:8px; padding:1rem; font-size:.82rem; }
+  .toc h4 { margin-top:0; }
+  .toc ul { list-style:none; padding-left:0; }
+  .toc a { color:var(--accent); text-decoration:none; }
+  @media(max-width:900px){ .toc { float:none; width:100%; margin:0 0 2rem; position:static; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header style="border-bottom:1px solid var(--border); padding-bottom:1rem; margin-bottom:2rem;">
+  <h1>🎨 Ergane — Design Document</h1>
+  <p style="color:var(--muted); margin:.5rem 0 0;">OpenClaw notifications | CLI UI | GitHub PR comments | Slack embeds</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#cli">1. CLI Design</a></li>
+    <li><a href="#github">2. GitHub PR Comments</a></li>
+    <li><a href="#openclaw">3. OpenClaw Notifications</a></li>
+    <li><a href="#slack">4. Slack Mockup</a></li>
+    <li><a href="#discord">5. Discord Mockup</a></li>
+    <li><a href="#webhook">6. Webhook Schemas</a></li>
+    <li><a href="#state">7. State File Design</a></li>
+    <li><a href="#colors">8. Color System</a></li>
+  </ul>
+</nav>
+
+<h2 id="cli">1. CLI Design (Rich Terminal UI)</h2>
+
+<h3>1.1 Scan Command Output</h3>
+<div class="mockup">
+<div class="mockup-header">$ ergane scan --since HEAD~3</div>
+<pre style="margin:0; background:transparent; border:none;">
+╔══════════════════════════════════════════════════════════════════╗
+║ ⚠️  DISCLAIMER: This tool identifies potential technical      ║
+║     inventions. It does NOT provide legal advice.                ║
+║     Always consult a qualified patent attorney.                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Analyzing commit a1b2c3d: feat(cache): vector clock invalidation protocol
+
+  → Graphifyy subgraph: 14 nodes, 23 edges
+  → Detected invention (novelty 0.87 HIGH)
+
+  ┌────────────── Invention: Distributed Cache Invalidation... ──┐
+  │ Metric            │ Value                                     │
+  ├───────────────────┼───────────────────────────────────────────┤
+  │ Novelty Score     │ 0.87 (HIGH)                               │
+  │ Risk Assessment   │ NOVEL                                     │
+  │ Similarity Score  │ 23.0%                                     │
+  │ Closest Patent    │ US10,123,456                              │
+  │ Recommendation    │ PROCEED_WITH_FILING                       │
+  └───────────────────┴───────────────────────────────────────────┘
+
+  ┌─ Draft Independent Claim ────────────────────────────────────┐
+  │ 1. A method for distributed cache invalidation comprising:  │
+  │    maintaining a vector clock per cache node;               │
+  │    comparing vector clocks to detect stale entries;         │
+  │    atomically invalidating stale entries when a network     │
+  │    partition heals.                                         │
+  └─────────────────────────────────────────────────────────────┘
+
+  ✓ OpenClaw notification sent to #inventions
+  ✓ GitHub PR comment added to #42
+
+1 invention(s) detected.
+</pre>
+</div>
+
+<h3>1.2 No Detection Output</h3>
+<div class="mockup">
+<div class="mockup-header">$ ergane scan --since HEAD~1</div>
+<pre style="margin:0; background:transparent; border:none;">
+╔══════════════════════════════════════════════════════════════════╗
+║ ⚠️  DISCLAIMER                                                   ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Analyzing commit d4e5f6g: docs: update README
+
+  → Graphifyy subgraph: 2 nodes, 0 edges
+  → Novelty score 0.12 — skipping
+
+No patentable inventions detected in this range.
+</pre>
+</div>
+
+<h3>1.3 JSON Output Mode</h3>
+<pre><code>$ ergane scan --since HEAD~1 --json | jq .
+[
+  {
+    "commit_hash": "a1b2c3d",
+    "commit_message": "feat(cache): vector clock invalidation",
+    "detection": {
+      "technical_problem": "Inconsistent cache state during network partitions",
+      "technical_solution": "Vector clock-based invalidation protocol",
+      "novelty_score": 0.87,
+      "novelty_assessment": "HIGH",
+      "key_claim_elements": ["maintaining a vector clock", "comparing vector clocks", "atomic invalidation"],
+      "ipc_suggestion": "G06F12/08",
+      "skip": false
+    },
+    "prior_art": {
+      "sources_queried": ["uspto", "epo", "pqai"],
+      "results_count": 18,
+      "query_time_ms": 8432
+    },
+    "synthesis": {
+      "overall_similarity_score": 23.0,
+      "closest_patent": {
+        "patent_number": "US10,123,456",
+        "title": "Method for distributed cache synchronization",
+        "source": "USPTO",
+        "similarity_score": 18.0,
+        "overlapping_claim_elements": ["network partition detection"]
+      },
+      "risk_assessment": "NOVEL",
+      "draft_independent_claim": "1. A method for distributed cache invalidation comprising...",
+      "recommendation": "PROCEED_WITH_FILING",
+      "disclaimer": "This is a preliminary draft for attorney review only."
+    }
+  }
+]
+</code></pre>
+
+<h2 id="github">2. GitHub PR Comment Design</h2>
+
+<pre><code>## 🧠 Invention Detected by Ergane
+
+| Field | Value |
+|---|---|
+| **Novelty Score** | 0.87 / 1.0 (HIGH) |
+| **Risk Assessment** | NOVEL |
+| **IPC Suggestion** | G06F12/08 |
+| **Closest Prior Art** | US10,123,456 — Method for distributed cache synchronization |
+| **Similarity** | 23.0% |
+| **Commit** | [a1b2c3d](https://github.com/org/repo/commit/a1b2c3d) |
+
+### Technical Problem
+Inconsistent cache state during network partitions in distributed systems.
+
+### Technical Solution
+Vector clock-based invalidation protocol with monotonic counters per cache node.
+
+### Key Claim Elements
+1. Maintaining a vector clock per cache node
+2. Comparing vector clocks across nodes to detect stale entries
+3. Atomic invalidation when partition heals
+
+### Draft Independent Claim
+```
+1. A method for distributed cache invalidation comprising:
+   maintaining a vector clock per cache node, each vector clock
+   comprising a set of counters corresponding to other cache nodes;
+   comparing vector clocks between nodes to detect entries that
+   are stale relative to a network partition;
+   and atomically invalidating the stale entries when the
+   network partition heals.
+```
+
+> ⚠️ **Disclaimer:** This tool identifies potential technical inventions. It does not provide legal advice. Consult a patent attorney. AI cannot be a co-inventor.
+
+### Recommendation
+<strong>PROCEED_WITH_FILING</strong> — Prior art search shows 23% similarity to closest reference. The vector clock approach appears novel.
+
+---
+*Detected by [Ergane](https://github.com/org/ergane) v0.1.0 | [Open Attorney Review]({pr_url}) | [Dismiss]({dismiss_url})*
+</code></pre>
+
+<h2 id="openclaw">3. OpenClaw Notification Design</h2>
+
+<h3>3.1 Gateway Configuration</h3>
+<pre><code>{
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    path: "/hooks",
+    allowedAgentIds: ["ergane"],
+    defaultSessionKey: "hook:ergane",
+    allowRequestSessionKey: false,
+    allowedSessionKeyPrefixes: ["hook:"],
+
+    mappings: [
+      {
+        id: "ergane_invention",
+        match: { path: "ergane" },
+        action: "agent",
+        name: "Ergane",
+        messageTemplate: "🧠 Invention Detected: {{payload.invention_title}}\nNovelty: {{payload.novelty_score}}/1.0 | Risk: {{payload.risk_assessment}}\nEngineer: {{payload.inventor}} | Commit: {{payload.commit_hash_short}}\n\nProblem: {{payload.technical_problem}}\nClosest Prior Art: {{payload.closest_patent_title}} ({{payload.closest_patent_number}}) — {{payload.overall_similarity_score}}% similar\n\nReview: {{payload.github_pr_url}}",
+        deliver: true,
+        channel: "slack",
+        to: "#inventions",
+        model: "openai/gpt-5.6-luna",
+        thinking: "medium"
+      }
+    ]
+  }
+}
+</code></pre>
+
+<h3>3.2 POST Payload from Ergane</h3>
+<pre><code>POST http://localhost:18789/hooks/ergane
+Authorization: Bearer SECRET
+Content-Type: application/json
+
+{
+  "invention_title": "Distributed Cache Invalidation via Vector Clocks",
+  "novelty_score": 0.87,
+  "risk_assessment": "NOVEL",
+  "inventor": "alice@company.com",
+  "commit_hash_short": "a1b2c3d",
+  "commit_url": "https://github.com/org/repo/commit/a1b2c3d",
+  "technical_problem": "Inconsistent cache state during network partitions",
+  "closest_patent_title": "Method for distributed cache synchronization",
+  "closest_patent_number": "US10,123,456",
+  "overall_similarity_score": 23.0,
+  "github_pr_url": "https://github.com/org/repo/pull/42",
+  "dismiss_url": "https://ergane.local/dismiss/42"
+}
+</code></pre>
+
+<h2 id="slack">4. Slack Notification Mockup</h2>
+
+<div class="slack-block">
+  <div class="slack-header">🧠 Invention Detected: Distributed Cache Invalidation via Vector Clocks</div>
+  <div style="margin-top:.5rem;">
+    <div class="slack-field">
+      <div class="slack-label">Novelty Score</div>
+      <div class="slack-value">0.87 / 1.0</div>
+    </div>
+    <div class="slack-field">
+      <div class="slack-label">Risk Assessment</div>
+      <div class="slack-value">🟢 NOVEL</div>
+    </div>
+    <div class="slack-field">
+      <div class="slack-label">Engineer</div>
+      <div class="slack-value">alice@company.com</div>
+    </div>
+    <div class="slack-field">
+      <div class="slack-label">Commit</div>
+      <div class="slack-value"><a href="#">a1b2c3d</a></div>
+    </div>
+  </div>
+  <div style="margin-top:.5rem; color:#9e9e9e;">
+    <strong>Technical Problem:</strong> Inconsistent cache state during network partitions
+  </div>
+  <div style="margin-top:.5rem; color:#9e9e9e;">
+    <strong>Closest Prior Art:</strong> US10,123,456 — 23% similar
+  </div>
+  <div style="margin-top:.75rem;">
+    <a href="#" style="background:#007a5a; color:#fff; padding:.4rem 1rem; border-radius:4px; text-decoration:none; display:inline-block;">Review Draft Claim</a>
+    <a href="#" style="background:#e01e5a; color:#fff; padding:.4rem 1rem; border-radius:4px; text-decoration:none; display:inline-block; margin-left:.5rem;">Dismiss</a>
+  </div>
+</div>
+
+<h2 id="discord">5. Discord Notification Mockup</h2>
+
+<pre><code>{
+  "embeds": [{
+    "title": "🧠 Invention Detected",
+    "description": "**Distributed Cache Invalidation via Vector Clocks**\n\n**Novelty:** 0.87/1.0 (HIGH)\n**Risk:** 🟢 NOVEL\n**Engineer:** alice@company.com\n**Commit:** [a1b2c3d](https://github.com/org/repo/commit/a1b2c3d)",
+    "color": 3066993,
+    "fields": [
+      {"name": "Technical Problem", "value": "Inconsistent cache state during network partitions", "inline": false},
+      {"name": "Closest Prior Art", "value": "US10,123,456 — 23% similar", "inline": false}
+    ],
+    "footer": {"text": "Ergane v0.1.0 | OpenAI Build Week 2026"}
+  }]
+}
+</code></pre>
+
+<h2 id="webhook">6. Webhook Schemas</h2>
+
+<h3>6.1 Ergane → OpenClaw</h3>
+<table>
+  <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+  <tr><td>invention_title</td><td>string</td><td>Yes</td><td>Short title of invention</td></tr>
+  <tr><td>novelty_score</td><td>float</td><td>Yes</td><td>0.0–1.0</td></tr>
+  <tr><td>risk_assessment</td><td>string</td><td>Yes</td><td>NOVEL, POSSIBLY_NOVEL, LIKELY_PRIOR_ART</td></tr>
+  <tr><td>inventor</td><td>string</td><td>Yes</td><td>Email or username</td></tr>
+  <tr><td>commit_hash_short</td><td>string</td><td>Yes</td><td>7-char hash</td></tr>
+  <tr><td>commit_url</td><td>string (URL)</td><td>Yes</td><td>Full commit URL</td></tr>
+  <tr><td>technical_problem</td><td>string</td><td>Yes</td><td>Technical problem description</td></tr>
+  <tr><td>closest_patent_title</td><td>string</td><td>No</td><td>Title of closest prior art</td></tr>
+  <tr><td>closest_patent_number</td><td>string</td><td>No</td><td>Patent number</td></tr>
+  <tr><td>overall_similarity_score</td><td>float</td><td>No</td><td>0–100%</td></tr>
+  <tr><td>github_pr_url</td><td>string (URL)</td><td>No</td><td>Link to review PR</td></tr>
+  <tr><td>dismiss_url</td><td>string (URL)</td><td>No</td><td>Link to dismiss notification</td></tr>
+</table>
+
+<h3>6.2 OpenClaw Response</h3>
+<table>
+  <tr><th>Status</th><th>Meaning</th></tr>
+  <tr><td>200</td><td><code>/hooks/wake</code> success</td></tr>
+  <tr><td>202</td><td><code>/hooks/agent</code> async run started</td></tr>
+  <tr><td>401</td><td>Auth failure (invalid token)</td></tr>
+  <tr><td>429</td><td>Rate limited (check Retry-After header)</td></tr>
+  <tr><td>400</td><td>Invalid payload</td></tr>
+  <tr><td>413</td><td>Payload too large</td></tr>
+</table>
+
+<h2 id="state">7. State File Design</h2>
+
+<h3>7.1 File: .github/ergane-state.md</h3>
+<pre><code>---
+version: 1
+last_run: 2026-07-18T04:30:00Z
+pipeline_version: 0.1.0
+---
+
+## Inventions Registry
+| ID | Date | Commit | Score | Status | PR | Inventor | IPC |
+|---|---|---|---|---|---|---|---|
+| INV-001 | 2026-07-18 | a1b2c3d | 0.87 HIGH | pending-review | #42 | alice@ | G06F12/08 |
+| INV-002 | 2026-07-17 | b2c3d4e | 0.52 MED | abandoned | — | bob@ | G06N7/01 |
+
+## Statistics (Running)
+- Total commits scanned: 47
+- Inventions detected: 2
+- False positives: 3
+- Attorney approved: 0
+- Provisional filings: 0
+
+## False Positives Log
+| Date | Commit | Score | Reason | Correction |
+|---|---|---|---|---|
+| 2026-07-16 | c3d4e5f | 0.43 | UI layout change | Added "UI/CSS" exclusion rule |
+| 2026-07-15 | d4e5f6g | 0.41 | README update | Added "documentation" exclusion |
+
+## Company Technical Domains
+- Distributed Systems: cache invalidation, consensus, replication
+- ML Infrastructure: training pipelines, inference optimization
+- Security: zero-knowledge proofs, multi-party computation
+</code></pre>
+
+<h2 id="colors">8. Color System</h2>
+
+<table>
+  <tr><th>Usage</th><th>Hex</th><th>Semantic</th></tr>
+  <tr><td>Novelty HIGH</td><td>#238636</td><td>Green — go</td></tr>
+  <tr><td>Novelty MEDIUM</td><td>#d29922</td><td>Amber — caution</td></tr>
+  <tr><td>Novelty LOW / SKIP</td><td>#8b949e</td><td>Gray — no action</td></tr>
+  <tr><td>Risk NOVEL</td><td>#3fb950</td><td>Bright green</td></tr>
+  <tr><td>Risk POSSIBLY_NOVEL</td><td>#d29922</td><td>Amber</td></tr>
+  <tr><td>Risk LIKELY_PRIOR_ART</td><td>#f85149</td><td>Red — stop</td></tr>
+  <tr><td>Accent (links, headers)</td><td>#58a6ff</td><td>Blue</td></tr>
+  <tr><td>Secondary accent</td><td>#7ee787</td><td>Mint green</td></tr>
+  <tr><td>Warning / Disclaimer</td><td>#f85149</td><td>Red</td></tr>
+</table>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center;">
+DESIGN.html v1.0 | Ergane UI/UX Design | OpenAI Build Week 2026
+</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergane — Product Requirements Document</title>
+<style>
+  :root { --bg:#0d1117; --fg:#c9d1d9; --accent:#58a6ff; --accent2:#7ee787; --warn:#f85149; --muted:#8b949e; --code:#161b22; --border:#30363d; }
+  * { box-sizing:border-box; }
+  body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; margin:0; padding:0; }
+  .container { max-width:1100px; margin:0 auto; padding:2rem; }
+  header { border-bottom:1px solid var(--border); padding-bottom:1rem; margin-bottom:2rem; }
+  h1 { color:var(--accent); font-size:2.2rem; margin:0; }
+  h2 { color:var(--accent2); border-bottom:1px solid var(--border); padding-bottom:.3rem; margin-top:2.5rem; }
+  h3 { color:var(--accent); margin-top:1.8rem; }
+  h4 { color:#79c0ff; }
+  .badge { display:inline-block; padding:.15rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; margin-right:.3rem; }
+  .badge-mvp { background:#238636; color:#fff; }
+  .badge-stretch { background:#8957e5; color:#fff; }
+  .badge-legal { background:var(--warn); color:#fff; }
+  .badge-judge { background:#1f6feb; color:#fff; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:.9rem; }
+  th, td { border:1px solid var(--border); padding:.5rem .75rem; text-align:left; }
+  th { background:var(--code); color:var(--accent); font-weight:600; }
+  tr:nth-child(even) { background:rgba(255,255,255,.02); }
+  code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:.15rem .35rem; border-radius:4px; font-size:.85rem; }
+  pre { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:1rem; overflow-x:auto; border:1px solid var(--border); border-radius:6px; }
+  .legal-block { background:rgba(248,81,73,.08); border-left:4px solid var(--warn); padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .judge-block { background:rgba(31,111,235,.08); border-left:4px solid #1f6feb; padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .user-story { background:var(--code); border:1px solid var(--border); border-radius:6px; padding:1rem; margin:.75rem 0; }
+  .user-story h4 { margin:.2rem 0 .5rem; }
+  .flow { display:flex; flex-direction:column; gap:.3rem; margin:1rem 0; }
+  .flow-step { display:flex; align-items:center; gap:.75rem; padding:.6rem .9rem; background:var(--code); border:1px solid var(--border); border-radius:6px; font-size:.9rem; }
+  .flow-step-num { background:var(--accent); color:#fff; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:700; font-size:.8rem; flex-shrink:0; }
+  .toc { position:sticky; top:1rem; float:right; width:250px; margin-left:2rem; background:var(--code); border:1px solid var(--border); border-radius:8px; padding:1rem; font-size:.8rem; }
+  .toc h4 { margin-top:0; }
+  .toc ul { list-style:none; padding-left:0; }
+  .toc a { color:var(--accent); text-decoration:none; }
+  @media(max-width:900px){ .toc { float:none; width:100%; margin:0 0 2rem; position:static; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>📋 Ergane — Product Requirements Document</h1>
+  <p style="color:var(--muted); margin:.5rem 0 0;">OpenAI Build Week 2026 | Developer Tools Track | PRD v1.0</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#overview">1. Product Overview</a></li>
+    <li><a href="#users">2. User Personas</a></li>
+    <li><a href="#stories">3. User Stories</a></li>
+    <li><a href="#features">4. Feature Requirements</a></li>
+    <li><a href="#legal">5. Legal Requirements</a></li>
+    <li><a href="#tech">6. Technical Requirements</a></li>
+    <li><a href="#api">7. API Requirements</a></li>
+    <li><a href="#nonfunc">8. Non-Functional Requirements</a></li>
+    <li><a href="#scoping">9. Scoping Matrix (MVP vs Stretch)</a></li>
+    <li><a href="#journey">10. User Journeys</a></li>
+    <li><a href="#metrics">11. Success Metrics</a></li>
+    <li><a href="#demo">12. Demo Script</a></li>
+    <li><a href="#submission">13. Submission Checklist</a></li>
+  </ul>
+</nav>
+
+<h2 id="overview">1. Product Overview</h2>
+
+<p>Ergane is an <strong>invention detection assistant</strong> for engineering teams. It runs on every git push, analyzes code diffs for potential patentable technical improvements, searches patent databases in parallel, synthesizes prior art similarity, drafts preliminary claim language, and notifies teams — all with a mandatory human review gate.</p>
+
+<div class="legal-block">
+<strong>LEGAL POSITIONING (NON-NEGOTIABLE):</strong> Ergane is an <em>assistant</em>, not a replacement for patent attorneys. Every output carries a disclaimer. The tool never claims to guarantee patentability and never auto-files patents.
+</div>
+
+<table>
+  <tr><th>Attribute</th><th>Value</th></tr>
+  <tr><td><span class="badge badge-mvp">MVP</span> Name</td><td>Ergane (Greek goddess of crafts)</td></tr>
+  <tr><td><span class="badge badge-mvp">MVP</span> Tagline</td><td>"Turn every git push into an IP audit"</td></tr>
+  <tr><td><span class="badge badge-judge">JUDGE</span> Hook</td><td>"Built with Codex, GPT-5.6, Coral, Graphify, and OpenClaw — the notification layer runs an agent, not just a webhook"</td></tr>
+  <tr><td><span class="badge badge-mvp">MVP</span> Track</td><td>Developer Tools — OpenAI Build Week 2026</td></tr>
+  <tr><td><span class="badge badge-mvp">MVP</span> Deadline</td><td>July 21, 2026 @ 5:00 PM PDT</td></tr>
+  <tr><td><span class="badge badge-legal">LEGAL</span> Disclaimer</td><td>"This tool identifies potential technical inventions. It does not provide legal advice. Consult a patent attorney."</td></tr>
+</table>
+
+<h3>1.1 Problem Statement</h3>
+<ul>
+  <li><strong>Engineers invent</strong> patentable technical improvements in code every day</li>
+  <li><strong>They don't know it</strong> — patentable subject matter is invisible to non-lawyers</li>
+  <li><strong>By the time legal review happens</strong> (if ever), the invention is shipped, blogged about, or committed to public repos — destroying patentability</li>
+  <li><strong>Prior art search is expensive</strong> — patent attorneys charge $5K–$15K for a single prior art opinion</li>
+  <li><strong>Early detection is everything</strong> — filing before public disclosure preserves foreign rights under the Paris Convention</li>
+</ul>
+
+<h3>1.2 Solution Statement</h3>
+<p>Ergane moves invention detection <strong>left</strong> into the engineering workflow. Instead of waiting 6–12 months for a legal review, every commit is automatically screened. When a potential invention is detected:</p>
+<ol>
+  <li>Technical problem and solution are extracted</li>
+  <li>Prior art is searched across USPTO, EPO, and PQAI in parallel</li>
+  <li>Novelty assessment and draft claim are generated</li>
+  <li>Team is notified via OpenClaw (slack/discord)</li>
+  <li>Human attorney review is gated — nothing auto-files</li>
+</ol>
+
+<h2 id="users">2. User Personas</h2>
+
+<h3>Persona 1: Alice — Principal Engineer</h3>
+<table>
+  <tr><th>Attribute</th><th>Detail</th></tr>
+  <tr><td>Role</td><td>Principal Software Engineer at a Series C infra company</td></tr>
+  <tr><td>Goal</td><td>Protect her team's innovations without becoming a legal process</td></tr>
+  <tr><td>Pain</td><td>She built a novel distributed consensus algorithm but didn't know it was patentable until a competitor published</td></tr>
+  <tr><td>How Ergane helps</td><td>Automatic flag on the commit that introduced the algorithm, with prior art search showing novelty. She forwards to legal for review.</td></tr>
+  <tr><td>Frequency</td><td>Daily (every push)</td></tr>
+</table>
+
+<h3>Persona 2: Bob — Patent Attorney</h3>
+<table>
+  <tr><th>Attribute</th><th>Detail</th></tr>
+  <tr><td>Role</td><td>In-house patent counsel at a tech company</td></tr>
+  <tr><td>Goal</td><td>Review technical disclosures efficiently, minimizing attorney time on dead ends</td></tr>
+  <tr><td>Pain</td><td>Receives 50+ "hey is this patentable?" Slack DMs per week from engineers. Most are standard implementations.</td></tr>
+  <tr><td>How Ergane helps</td><td>Only HIGH novelty commits surface. Each comes with structured disclosure, prior art comparison, and draft claim. He reviews 3–5 per week instead of 50.</td></tr>
+  <tr><td>Frequency</td><td>Weekly batch review</td></tr>
+</table>
+
+<h3>Persona 3: Carol — CTO</h3>
+<table>
+  <tr><th>Attribute</th><th>Detail</th></tr>
+  <tr><td>Role</td><td>CTO overseeing 45 engineers across 6 teams</td></tr>
+  <tr><td>Goal</td><td>Build defensible IP portfolio without slowing engineering velocity</td></tr>
+  <tr><td>Pain</td><td>No visibility into what her teams are inventing. IP strategy is reactive (competitor sued us → scramble for portfolio)</td></tr>
+  <tr><td>How Ergane helps</td><td>Dashboard of all detected inventions, novelty scores, filing recommendations. Proactive portfolio building.</td></tr>
+  <tr><td>Frequency</td><td>Monthly portfolio review</td></tr>
+</table>
+
+<h2 id="stories">3. User Stories</h2>
+
+<div class="user-story">
+  <h4>US-001: Automatic Invention Detection <span class="badge badge-mvp">MVP</span></h4>
+  <p><strong>As an</strong> engineer, <strong>I want</strong> every commit to be automatically screened for patentable inventions, <strong>so that</strong> I don't need to be a lawyer to identify IP value in my code.</p>
+  <p><strong>AC:</strong> Given a git push → When Ergane runs → Then inventions with novelty_score ≥ 0.4 are flagged with structured output.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-002: Structural Output for Legal Review <span class="badge badge-mvp">MVP</span></h4>
+  <p><strong>As a</strong> patent attorney, <strong>I want</strong> a structured disclosure document with technical problem, solution, prior art comparison, and draft claims, <strong>so that</strong> I can provide an opinion without reinventing the analysis.</p>
+  <p><strong>AC:</strong> Given an invention detected → When I open the GitHub PR → Then I see: (1) Technical Problem, (2) Technical Solution, (3) Novelty Score, (4) Top 10 Prior Art patents with similarity scores, (5) Draft Independent Claim.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-003: Parallel Patent Database Search <span class="badge badge-mvp">MVP</span></h4>
+  <p><strong>As an</strong> engineer, <strong>I want</strong> Ergane to search USPTO, EPO, and PQAI simultaneously via a single SQL query, <strong>so that</strong> prior art search is fast and comprehensive.</p>
+  <p><strong>AC:</strong> Given an invention description → When Coral executes → Then results from USPTO + EPO + PQAI are returned in a unified table within 10 seconds.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-004: Slack Notification <span class="badge badge-mvp">MVP</span></h4>
+  <p><strong>As a</strong> team lead, <strong>I want</strong> to be notified in Slack when a novel invention is detected, <strong>so that</strong> I can review and forward to legal promptly.</p>
+  <p><strong>AC:</strong> Given an invention with novelty ≥ 0.7 → When synthesis completes → Then OpenClaw posts a Slack message with novelty gauge, prior art link, and "Review Draft" button.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-005: Human Review Gate <span class="badge badge-mvp">MVP</span></h4>
+  <p><strong>As a</strong> legal counsel, <strong>I want</strong> to approve or reject every flagged invention before any filing action, <strong>so that</strong> only defensible disclosures proceed.</p>
+  <p><strong>AC:</strong> Given an invention detected → When Ergane completes → Then a GitHub PR comment is opened with "needs-attorney-review" label. No auto-filing occurs.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-006: Invention Memory <span class="badge badge-stretch">STRETCH</span></h4>
+  <p><strong>As a</strong> CTO, <strong>I want</strong> all detected inventions stored in a searchable knowledge graph, <strong>so that</strong> I can query what Alice invented last month or what relates to a specific patent family.</p>
+  <p><strong>AC:</strong> Given a query "What inventions did Alice create in June 2026?" → When GBrain hybrid search runs → Then relevant invention notes are returned with typed links.</p>
+</div>
+
+<div class="user-story">
+  <h4>US-007: Agentic Notification <span class="badge badge-judge">JUDGE</span></h4>
+  <p><strong>As a</strong> judge at a hackathon, <strong>I want</strong> to see that the notification layer is not just a webhook but an agent that decides what to do, <strong>so that</strong> I understand the technical depth of the project.</p>
+  <p><strong>AC:</strong> Given an invention notification → When OpenClaw receives it → Then an agent turn runs that decides channel, urgency, and can ask follow-up questions.</p>
+</div>
+
+<h2 id="features">4. Feature Requirements</h2>
+
+<h3>FR-001: CLI Tool (Typer)</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Command</td><td><code>ergane scan --since HEAD~1 --to HEAD --repo .</code></td></tr>
+  <tr><td>Subcommands</td><td>scan, analyze, config</td></tr>
+  <tr><td>Output modes</td><td>Rich terminal UI (default), --json for CI</td></tr>
+  <tr><td>Exit codes</td><td>0 = no inventions, 1 = inventions detected, 2 = error</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h3>FR-002: GitHub Action</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Trigger</td><td>on: [push, pull_request, workflow_dispatch]</td></tr>
+  <tr><td>Permissions</td><td>issues:write, pull-requests:write, contents:read</td></tr>
+  <tr><td>Output</td><td>PR comment with invention disclosure OR no-op if none detected</td></tr>
+  <tr><td>Config</td><td>Via .github/ergane.yml or env vars</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h3>FR-003: Invention Detection Engine</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Input</td><td>Git diff + commit message + Graphifyy subgraph + files_changed</td></tr>
+  <tr><td>Model</td><td>GPT-5.6 (required for hackathon)</td></tr>
+  <tr><td>Output</td><td>JSON with: technical_problem, technical_solution, novelty_score (0-1), novelty_assessment (HIGH/MEDIUM/LOW), key_claim_elements[], rationale, ipc_suggestion</td></tr>
+  <tr><td>Threshold</td><td>novelty_score ≥ 0.4 triggers pipeline; < 0.4 skips (with log)</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h3>FR-004: Coral SQL Generation</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Sources</td><td>USPTO, EPO, PQAI, local_patents (configurable)</td></tr>
+  <tr><td>SQL dialect</td><td>Coral DSL v3 (validated against withcoral.com reference)</td></tr>
+  <tr><td>Query pattern</td><td>WITH ... UNION ALL ORDER BY source_weight DESC LIMIT 20</td></tr>
+  <tr><td>Result limit</td><td>10 per source, 20 total (configurable)</td></tr>
+  <tr><td>Timeout</td><td>15 seconds per source</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h3>FR-005: Prior Art Synthesis</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Input</td><td>Invention JSON + top 10 Coral results as markdown table</td></tr>
+  <tr><td>Model</td><td>GPT-5.6</td></tr>
+  <tr><td>Output</td><td>JSON with: overall_similarity_score (0-100), closest_patent {}, risk_assessment (NOVEL/POSSIBLY_NOVEL/LIKELY_PRIOR_ART), draft_independent_claim, recommendation (PROCEED/REFINE/ABANDON)</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h3>FR-006: OpenClaw Notification</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Trigger</td><td>Novelty score ≥ 0.7 (configurable threshold)</td></tr>
+  <tr><td>Gateway</td><td>OpenClaw local gateway (POST /hooks/ergane)</td></tr>
+  <tr><td>Config</td><td>~/.openclaw/openclaw.json hooks.mappings</td></tr>
+  <tr><td>Delivery</td><td>Slack (#inventions) or Discord</td></tr>
+  <tr><td>Depth</td><td>Agentic: OpenClaw runs an agent turn, not just relay</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-judge">JUDGE</span></td></tr>
+</table>
+
+<h3>FR-007: State Persistence</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>File</td><td>.github/ergane-state.md</td></tr>
+  <tr><td>Content</td><td>Invention registry, false positive patterns, domain preferences</td></tr>
+  <tr><td>Format</td><td>Markdown tables + YAML frontmatter per entry</td></tr>
+  <tr><td>Priority</td><td><span class="badge badge-mvp">MVP</span></td></tr>
+</table>
+
+<h2 id="legal">5. Legal Requirements</h2>
+
+<div class="legal-block">
+<strong>⚠️ THESE CONSTRAINTS ARE PRODUCT FEATURES, NOT BUGS.</strong> Compliance with legal reality is what differentiates Ergane from snake-oil "AI patent" tools.
+</div>
+
+<table>
+  <tr><th>ID</th><th>Constraint</th><th>Implementation</th><th>Status</th></tr>
+  <tr><td>LR-001</td><td>Software/code per se is NOT patentable (Alice Corp, §101)</td><td>System claims language: "A method comprising...", "A system comprising..." — never "A program..."</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-002</td><td>AI cannot be a co-inventor (USPTO Nov 2025 guidance)</td><td>All outputs say "Preliminary draft for attorney review only." Human (engineer) is sole inventor.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-003</td><td>GitHub code is NOT USPTO-recognized prior art</td><td>GitHub used only for product validation. Prior art claims sourced only from USPTO/EPO databases.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-004</td><td>Disclaimer on every output</td><td>"This tool identifies potential technical inventions. It does not provide legal advice. Consult a patent attorney." — in CLI, PR comment, and README.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-005</td><td>No auto-filing</td><td>Ergane NEVER files patents, sends forms to USPTO, or acts as a legal representative. Maximum action: open GitHub PR for human review.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-006</td><td>Confidentiality: local-first</td><td>No generic OpenAI API training on user data. All code analysis done via API with no-retention. Local patent corpus preferred over cloud queries where possible.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+  <tr><td>LR-007</td><td>Permission-gated repo access</td><td>Ergane NEVER processes code from private repos without explicit opt-in in config.</td><td><span class="badge badge-legal">REQUIRED</span></td></tr>
+</table>
+
+<h2 id="tech">6. Technical Requirements</h2>
+
+<table>
+  <tr><th>Category</th><th>Requirement</th><th>Version</th></tr>
+  <tr><td>Runtime</td><td>Python</td><td>≥3.10 (3.11 preferred)</td></tr>
+  <tr><td>CLI framework</td><td>Typer</td><td>≥0.12.0</td></tr>
+  <tr><td>Git parsing</td><td>PyGit2</td><td>≥1.14.0</td></tr>
+  <tr><td>AST analysis</td><td>Graphifyy</td><td>≥0.9.16 (PyPI package)</td></tr>
+  <tr><td>SQL runtime</td><td>Coral</td><td>Latest via brew</td></tr>
+  <tr><td>LLM client</td><td>OpenAI</td><td>gpt-5.6 (required)</td></tr>
+  <tr><td>Notifications</td><td>OpenClaw</td><td>JSON5 gateway config</td></tr>
+  <tr><td>CI/CD</td><td>GitHub Actions</td><td>ubuntu-latest</td></tr>
+  <tr><td>State</td><td>Markdown</td><td>.github/ergane-state.md</td></tr>
+</table>
+
+<h3>6.1 Environment Variables</h3>
+<pre><code>OPENAI_API_KEY=sk-...          # Required
+OPENAI_BASE_URL=...            # Optional (default: https://api.openai.com/v1)
+ERGANE_MODEL=gpt-5.6           # Default model
+ERGANE_NOVELTY_THRESHOLD=0.4   # Minimum novelty to trigger pipeline
+USPTO_API_KEY=...              # Required for USPTO search
+data.uspto.gov key via video verification
+EPO_CONSUMER_KEY=...           # Required for EPO search
+developers.epo.org
+EPO_CONSUMER_SECRET=...        # Required for EPO search
+PQAI_API_KEY=...               # Optional (free tier works without)
+OPENCLAW_WEBHOOK_URL=...       # Optional (for Slack notifications)
+OPENCLAW_HOOKS_TOKEN=...       # Required if using OpenClaw
+GITHUB_TOKEN=...               # Required for PR comments
+GITHUB_REPOSITORY=owner/repo   # Auto-set in GitHub Actions
+</code></pre>
+
+<h2 id="api">7. API Requirements</h2>
+
+<h3>7.1 USPTO Open Data Portal (ODP)</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Endpoint</td><td><code>POST https://api.uspto.gov/api/v1/patent/applications/search</code></td></tr>
+  <tr><td>Auth</td><td><code>X-API-KEY: {key}</code> header</td></tr>
+  <tr><td>Cost</td><td>Free (registration required, video verification)</td></tr>
+  <tr><td>Coverage</td><td>Applications filed since 2001-01-01 (grants where patentNumber populated)</td></tr>
+  <tr><td>Response format</td><td><code>{ "patentFileWrapperDataBag": [...], "totalNumFound": N }</code></td></tr>
+</table>
+
+<h3>7.2 EPO Open Patent Services (OPS)</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Endpoint</td><td><code>GET https://ops.epo.org/3.2/rest-services/published-data/search</code></td></tr>
+  <tr><td>Auth</td><td>OAuth2 (Consumer Key + Secret → access token)</td></tr>
+  <tr><td>Cost</td><td>Free (4GB/week fair use)</td></tr>
+  <tr><td>Query</td><td>CQL (Contextual Query Language): <code>ti=distributed cache</code>, <code>ab=vector clock</code></td></tr>
+</table>
+
+<h3>7.3 PQAI (Project PQ AI)</h3>
+<table>
+  <tr><th>Property</th><th>Value</th></tr>
+  <tr><td>Endpoint</td><td><code>GET https://api.projectpq.ai/search/102</code></td></tr>
+  <tr><td>Auth</td><td>Query param <code>?token=...</code> (free tier, optional for basic use)</td></tr>
+  <tr><td>Cost</td><td>Free tier: 1,500 searches/month (2/min)</td></tr>
+  <tr><td>Response</td><td><code>{ "results": [{ "publication_number": "", "title": "", "abstract": "", "score": 0.0 }] }</code></td></tr>
+</table>
+
+<h2 id="nonfunc">8. Non-Functional Requirements</h2>
+
+<table>
+  <tr><th>ID</th><th>Requirement</th><th>Target</th></tr>
+  <tr><td>NFR-001</td><td>Pipeline execution time</td><td>&lt; 60 seconds per commit (excluding LLM latency)</td></tr>
+  <tr><td>NFR-002</td><td>Coral query timeout</td><td>15 seconds per source</td></tr>
+  <tr><td>NFR-003</td><td>LLM timeout</td><td>30 seconds per call (2 calls per pipeline)</td></tr>
+  <tr><td>NFR-004</td><td>Total pipeline timeout</td><td>300 seconds (safety bound)</td></tr>
+  <tr><td>NFR-005</td><td>False positive rate</td><td>&lt; 30% (novelty_score ≥ 0.4 but later rejected)</td></tr>
+  <tr><td>NFR-006</td><td>Privacy</td><td>No code stored externally; diff sent to OpenAI API with no-retention</td></tr>
+  <tr><td>NFR-007</td><td>Platform support</td><td>macOS, Linux, Windows (WSL)</td></tr>
+  <tr><td>NFR-008</td><td>Install method</td><td>pip install ergane; brew install --cask ergane (stretch)</td></tr>
+</table>
+
+<h2 id="scoping">9. Scoping Matrix: MVP vs Stretch</h2>
+
+<table>
+  <tr><th>Feature</th><th>MVP (Days 1-5)</th><th>Stretch (Post-hackathon)</th></tr>
+  <tr><td>CLI scan</td><td>✅ Single commit range</td><td>Multi-branch, full repo history</td></tr>
+  <tr><td>GitHub Action</td><td>✅ PR comment only</td><td>Auto-label, triage inbox</td></tr>
+  <tr><td>Patent sources</td><td>✅ USPTO + EPO + PQAI</td><td>WIPO, JPO, CNIPA</td></tr>
+  <tr><td>Local corpus</td><td>✅ Parquet mock data</td><td>Full USPTO bulk download</td></tr>
+  <tr><td>OpenClaw</td><td>✅ Basic webhook</td><td>Agentic decision + follow-ups</td></tr>
+  <tr><td>GBrain</td><td>❌ Not in MVP</td><td>Full MCP integration</td></tr>
+  <tr><td>Claim drafting</td><td>✅ Independent claim only</td><td>Dependent claims + drawings</td></tr>
+  <tr><td>IPC/CPC suggestion</td><td>✅ Basic string match</td><td>ML classifier</td></tr>
+  <tr><td>Dashboard</td><td>❌ Not in MVP</td><td>Web UI with invention timeline</td></tr>
+  <tr><td>Cost tracking</td><td>✅ Logged to state file</td><td>Billing dashboard</td></tr>
+</table>
+
+<h2 id="journey">10. User Journeys</h2>
+
+<h3>10.1 Alice — Principal Engineer</h3>
+<div class="flow">
+  <div class="flow-step"><div class="flow-step-num">1</div><div>Alice pushes commit <code>a1b2c3d</code> with novel distributed cache invalidation using vector clocks</div></div>
+  <div class="flow-step"><div class="flow-step-num">2</div><div>GitHub Action triggers Ergane scan automatically</div></div>
+  <div class="flow-step"><div class="flow-step-num">3</div><div>Ergane: novelty_score = 0.87 (HIGH), IPC: G06F12/08</div></div>
+  <div class="flow-step"><div class="flow-step-num">4</div><div>Coral searches USPTO + EPO + PQAI → 20 results returned in 8s</div></div>
+  <div class="flow-step"><div class="flow-step-num">5</div><div>Synthesis: overall_similarity = 23% (NOVEL), closest patent = US10,123,456</div></div>
+  <div class="flow-step"><div class="flow-step-num">6</div><div>Draft claim generated with "for attorney review" disclaimer</div></div>
+  <div class="flow-step"><div class="flow-step-num">7</div><div>Slack notification with "Review Draft" button → opens GitHub PR #42</div></div>
+  <div class="flow-step"><div class="flow-step-num">8</div><div>Alice forwards PR to legal counsel Bob</div></div>
+</div>
+
+<h3>10.2 Bob — Patent Attorney</h3>
+<div class="flow">
+  <div class="flow-step"><div class="flow-step-num">1</div><div>Bob opens PR #42 with Ergane disclosure</div></div>
+  <div class="flow-step"><div class="flow-step-num">2</div><div>Structured: Problem, Solution, Novelty Score, Prior Art Table, Draft Claim</div></div>
+  <div class="flow-step"><div class="flow-step-num">3</div><div>Bob runs his own prior art search (confirming Ergane's results)</div></div>
+  <div class="flow-step"><div class="flow-step-num">4</div><div>Agrees with NOVEL assessment → approves for provisional filing</div></div>
+  <div class="flow-step"><div class="flow-step-num">5</div><div>Ergame state updated: INV-001 status → "attorney-approved"</div></div>
+</div>
+
+<h2 id="metrics">11. Success Metrics</h2>
+
+<table>
+  <tr><th>Metric</th><th>Target</th><th>Measurement</th></tr>
+  <tr><td>Detection accuracy</td><td>Novelty_score ≥ 0.7 correlates with attorney "PROCEED" recommendation in 80%+ of cases</td><td>Manual review of first 20 detections</td></tr>
+  <tr><td>Pipeline speed</td><td>&lt; 60s per commit (excluding LLM)</td><td>CI timing logs</td></tr>
+  <tr><td>Prior art coverage</td><td>≥2 sources queried per invention (USPTO + one other)</td><td>Coral query logs</td></tr>
+  <tr><td>False positive rate</td><td>&lt; 30% for novelty_score ≥ 0.4</td><td>Attorney rejection rate</td></tr>
+  <tr><td>Adoption</td><td>≥3 commits scanned in demo</td><td>Demo video evidence</td></tr>
+</table>
+
+<h2 id="demo">12. Demo Script (3 Minutes Exactly)</h2>
+
+<table>
+  <tr><th>Time</th><th>Action</th><th>Screen</th></tr>
+  <tr><td>0:00-0:30</td><td>Show GitHub repo. Push commit with novel distributed cache algorithm. Explain the technical problem (inconsistent cache state during partitions).</td><td>VS Code + terminal</td></tr>
+  <tr><td>0:30-1:15</td><td>Run <code>ergane scan</code>. Show Graphifyy AST subgraph (functions, calls, dependencies). Show GPT-5.6 output: "Novel distributed state reconciliation using vector clocks" — Novelty: HIGH (0.87).</td><td>Terminal (Rich UI)</td></tr>
+  <tr><td>1:15-2:00</td><td>Show agent generating Coral SQL. Show Coral executing parallel query across USPTO + EPO + PQAI. Show unified result table with 20 patents.</td><td>Terminal (SQL + results)</td></tr>
+  <tr><td>2:00-2:30</td><td>Show GPT-5.6 synthesis: Similarity 23% (NOVEL). Draft independent claim displayed. Closest prior art: US10,123,456.</td><td>Terminal (Rich table)</td></tr>
+  <tr><td>2:30-3:00</td><td>Show Slack notification via OpenClaw. Rich embed with novelty gauge, "Review Draft" button → GitHub PR. Agent asks: "Schedule attorney review?"</td><td>Slack (or screenshot)</td></tr>
+  <tr><td colspan="3"><strong>Close:</strong> "Ergane turns every git push into an IP audit. Built with Codex, GPT-5.6, Coral, Graphify, and OpenClaw — where the notification layer itself is an agent."</td></tr>
+</table>
+
+<h2 id="submission">13. Submission Checklist</h2>
+
+<table>
+  <tr><th>#</th><th>Item</th><th>Status</th></tr>
+  <tr><td>1</td><td>Working project (CLI runs end-to-end)</td><td>⬜</td></tr>
+  <tr><td>2</td><td>Code repo public with README</td><td>⬜</td></tr>
+  <tr><td>3</td><td>README: setup instructions, sample data, run guidance, Codex acceleration notes</td><td>⬜</td></tr>
+  <tr><td>4</td><td>Demo video &lt;3 min on YouTube (public)</td><td>⬜</td></tr>
+  <tr><td>5</td><td><code>/feedback</code> Session ID from Codex session</td><td>⬜</td></tr>
+  <tr><td>6</td><td>Category: Developer Tools</td><td>✅</td></tr>
+  <tr><td>7</td><td>Plugin/dev tool: installation instructions, supported platforms, demo instance</td><td>⬜</td></tr>
+  <tr><td>8</td><td>Coral integration highlighted in README</td><td>⬜</td></tr>
+  <tr><td>9</td><td>Legal disclaimer in tool output AND README</td><td>⬜</td></tr>
+  <tr><td>10</td><td>No claims of replacing lawyers or guaranteeing patentability</td><td>✅ (architecture ensures this)</td></tr>
+</table>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center;">
+PRD v1.0 | Ergane | OpenAI Build Week 2026 | <strong>July 18, 2026</strong> | Built with verified live data
+</p>
+
+</div>
+</body>
+</html>

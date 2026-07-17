@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from inventionguard import detector, prior_art, synthesizer
+from ergane import detector, prior_art, synthesizer
 
 
 def main() -> None:

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergane — Skill Definitions & Codex Agent Configuration</title>
+<style>
+  :root { --bg:#0d1117; --fg:#c9d1d9; --accent:#58a6ff; --accent2:#7ee787; --warn:#f85149; --muted:#8b949e; --code:#161b22; --border:#30363d; }
+  body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; margin:0; padding:0; }
+  .container { max-width:1100px; margin:0 auto; padding:2rem; }
+  h1 { color:var(--accent); font-size:2.2rem; margin:0; }
+  h2 { color:var(--accent2); border-bottom:1px solid var(--border); padding-bottom:.3rem; margin-top:2.5rem; }
+  h3 { color:var(--accent); margin-top:1.8rem; }
+  h4 { color:#79c0ff; }
+  .badge { display:inline-block; padding:.12rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; margin-right:.3rem; }
+  .badge-core { background:#238636; color:#fff; }
+  .badge-agent { background:#1f6feb; color:#fff; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:.9rem; }
+  th, td { border:1px solid var(--border); padding:.5rem .75rem; text-align:left; }
+  th { background:var(--code); color:var(--accent); font-weight:600; }
+  tr:nth-child(even) { background:rgba(255,255,255,.02); }
+  code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:.15rem .35rem; border-radius:4px; font-size:.85rem; }
+  pre { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:1rem; overflow-x:auto; border:1px solid var(--border); border-radius:6px; }
+  .skill-card { border:1px solid var(--border); border-radius:6px; padding:1rem; margin:.75rem 0; background:var(--code); }
+  .agent-card { border:1px solid #1f6feb33; border-radius:6px; padding:1rem; margin:.75rem 0; background:rgba(31,111,235,.05); }
+  .toc { position:sticky; top:1rem; float:right; width:250px; margin-left:2rem; background:var(--code); border:1px solid var(--border); border-radius:8px; padding:1rem; font-size:.82rem; }
+  .toc h4 { margin-top:0; }
+  .toc ul { list-style:none; padding-left:0; }
+  .toc a { color:var(--accent); text-decoration:none; }
+  @media(max-width:900px){ .toc { float:none; width:100%; margin:0 0 2rem; position:static; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header style="border-bottom:1px solid var(--border); padding-bottom:1rem; margin-bottom:2rem;">
+  <h1>🎯 Ergane — Skill & Agent Configuration</h1>
+  <p style="color:var(--muted); margin:.5rem 0 0;">Codex/Claude skills | Sub-agent TOML definitions | Tool invokes | MCP wiring</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#skills">1. Skills Overview</a></li>
+    <li><a href="#detect">2. $ergane-detect Skill</a></li>
+    <li><a href="#search">3. $ergane-prior-art Skill</a></li>
+    <li><a href="#synth">4. $ergane-synthesize Skill</a></li>
+    <li><a href="#notify">5. $ergane-notify Skill</a></li>
+    <li><a href="#agents">6. Codex Agent Configs</a></li>
+    <li><a href="#mcp">7. MCP Server Wiring</a></li>
+    <li><a href="#install">8. Install Commands</a></li>
+  </ul>
+</nav>
+
+<h2 id="skills">1. Skills Overview</h2>
+
+<p>Skills are codified project knowledge — how you stop re-explaining your project every session. Both Codex and Claude Code use the same format: a folder with <code>SKILL.md</code> and optional <code>references/</code>, <code>scripts/</code>, <code>assets/</code>.</p>
+
+<table>
+  <tr><th>Skill</th><th>Purpose</th><th>Trigger</th><th>Priority</th></tr>
+  <tr><td><span class="badge badge-core">CORE</span> $ergane-detect</td><td>Detect inventions from code diffs</td><td>"analyze this diff", "detect inventions"</td><td>MVP</td></tr>
+  <tr><td><span class="badge badge-core">CORE</span> $ergane-prior-art</td><td>Generate Coral SQL for patent search</td><td>"search patents", "find prior art"</td><td>MVP</td></tr>
+  <tr><td><span class="badge badge-core">CORE</span> $ergane-synthesize</td><td>Compare invention vs prior art, draft claims</td><td>"synthesize analysis", "draft claims"</td><td>MVP</td></tr>
+  <tr><td><span class="badge badge-core">CORE</span> $ergane-notify</td><td>Format OpenClaw webhook payload</td><td>"notify team", "send to Slack"</td><td>MVP</td></tr>
+</table>
+
+<h2 id="detect">2. $ergane-detect Skill</h2>
+
+<div class="skill-card">
+<h4>File: skills/ergane-detect/SKILL.md</h4>
+<pre><code>---
+name: ergane-detect
+version: 1.0.0
+description: Detect potential patentable technical inventions in code diffs
+trigger:
+  - "analyze this diff for patentable inventions"
+  - "what technical improvements are in this commit"
+  - "detect inventions"
+  - "screen this code change"
+  - "$ergane-detect"
+---
+
+# Ergane Invention Detection
+
+## Purpose
+Analyze code diffs (from PyGit2) and Graphifyy AST subgraphs to identify potential patentable technical improvements to computer functionality.
+
+## Input Schema
+```json
+{
+  "diff": "git diff patch string",
+  "commit_message": "string",
+  "subgraph": { "nodes": [...], "edges": [...] },
+  "files_changed": ["src/cache/invalidator.py", "src/consensus/vector_clock.py"]
+}
+```
+
+## Output Schema
+```json
+{
+  "technical_problem": "Inconsistent cache state during network partitions",
+  "technical_solution": "Vector clock-based invalidation protocol with monotonic counters",
+  "novelty_score": 0.87,
+  "novelty_assessment": "HIGH",
+  "key_claim_elements": [
+    "maintaining a vector clock per cache node",
+    "comparing vector clocks to detect stale entries",
+    "atomic invalidation when partition heals"
+  ],
+  "rationale": "This is a novel algorithmic improvement to distributed cache consistency...",
+  "ipc_suggestion": "G06F12/08",
+  "skip": false
+}
+```
+
+## Scoring Rules
+- HIGH (0.7-1.0): Novel algorithm, architectural improvement, or technical optimization with no obvious prior art.
+- MEDIUM (0.4-0.69): Improvement on known technique with non-obvious twist.
+- LOW (0.0-0.39): Routine implementation, standard library usage, UI change, business logic.
+
+## Legal Constraints
+- Software per se is NOT patentable (Alice Corp §101). Claim the method/system.
+- NEVER output legal advice. Only technical analysis.
+- ALWAYS include: "Preliminary draft for attorney review only."
+- AI cannot be a co-inventor (USPTO Nov 2025).
+
+## References
+- references/alice-corp.md — Alice Corp v. CLS Bank summary
+- references/uspto-101.md — Patent eligibility guidance
+</code></pre>
+</div>
+
+<h2 id="search">3. $ergane-prior-art Skill</h2>
+
+<div class="skill-card">
+<h4>File: skills/ergane-prior-art/SKILL.md</h4>
+<pre><code>---
+name: ergane-prior-art
+version: 1.0.0
+description: Generate Coral DSL v3 SQL for parallel patent database search
+trigger:
+  - "search patent databases"
+  - "find prior art"
+  - "generate coral sql"
+  - "$ergane-prior-art"
+---
+
+# Ergane Prior Art Search
+
+## Purpose
+Generate Coral DSL v3 compatible SQL to search USPTO, EPO, PQAI, and local patent corpora in parallel.
+
+## CORAL DSL v3 SYNTAX (verified)
+- Top-level key: `functions:` NOT `table_functions:`
+- Function args: `args:` NOT `arguments:`
+- Arg binding: `bind: {arg: name}` NOT `type: Utf8`
+- Search limits: `default_top_k`, `max_top_k`, `max_calls_per_query`
+- Request body: array with `path:`, `from: arg`, `key:`
+- Response: `rows_path: []` and explicit `columns: []`
+
+## Available Sources
+| Source | Table/Function | Auth | Query Syntax |
+|---|---|---|---|
+| USPTO | uspto.patents | X-API-KEY header | Solr-like field:value |
+| EPO | epo.patents | OAuth2 Bearer | CQL: ti=title, ab=abstract |
+| PQAI | pqai.search_patents(query => '...') | Optional token | Natural language semantic |
+| Local | local_patents.grants | None (parquet) | SQL WHERE clauses |
+
+## SQL Pattern
+```sql
+WITH uspto_results AS (
+    SELECT patent_number, title, abstract, assignee, 0.8 AS source_weight
+    FROM uspto.patents WHERE q = '{query}' LIMIT 10
+),
+epo_results AS (
+    SELECT doc_number AS patent_number, title, abstract, applicant AS assignee, 0.8 AS source_weight
+    FROM epo.patents WHERE q = '{cql_query}' LIMIT 10
+),
+pqai_results AS (
+    SELECT publication_number AS patent_number, title, abstract, NULL AS assignee, score AS source_weight
+    FROM pqai.search_patents(query => '{natural_query}', top_k => 10)
+)
+SELECT * FROM uspto_results
+UNION ALL SELECT * FROM epo_results
+UNION ALL SELECT * FROM pqai_results
+ORDER BY source_weight DESC
+LIMIT 20;
+```
+
+## Rules
+- Always query ≥2 sources for cross-validation.
+- Use source_weight for ranking (PQAI score highest priority).
+- Escape user query for SQL injection.
+</code></pre>
+</div>
+
+<h2 id="synth">4. $ergane-synthesize Skill</h2>
+
+<div class="skill-card">
+<h4>File: skills/ergane-synthesize/SKILL.md</h4>
+<pre><code>---
+name: ergane-synthesize
+version: 1.0.0
+description: Compare invention against prior art and draft preliminary patent claims
+trigger:
+  - "compare against prior art"
+  - "synthesize patent analysis"
+  - "draft patent claims"
+  - "$ergane-synthesize"
+---
+
+# Ergane Synthesis & Claim Drafting
+
+## Purpose
+Compare a detected technical invention against Coral prior art results, assess novelty, and draft preliminary claim language.
+
+## Input
+- Invention JSON (from $ergane-detect)
+- Prior art table (from $ergane-prior-art) — markdown format
+
+## Output
+```json
+{
+  "overall_similarity_score": 23.0,
+  "closest_patent": {
+    "patent_number": "US10,123,456",
+    "title": "Method for distributed cache synchronization",
+    "source": "USPTO",
+    "similarity_score": 18.0,
+    "overlapping_claim_elements": ["network partition detection"]
+  },
+  "risk_assessment": "NOVEL",
+  "analysis": "The vector clock approach is not anticipated by US10,123,456 which uses timestamps...",
+  "draft_independent_claim": "1. A method for distributed cache invalidation comprising...",
+  "recommendation": "PROCEED_WITH_FILING",
+  "disclaimer": "This is a preliminary draft for attorney review only."
+}
+```
+
+## Claim Drafting Rules
+1. Independent claim (Claim 1): Include ALL essential elements.
+2. Dependent claims (Claims 2-4): Add optional but valuable limitations.
+3. Language: "A method comprising...", "A system comprising..."
+4. NEVER claim software per se.
+5. ALWAYS include disclaimer.
+
+## Risk Assessment Scale
+- NOVEL (similarity &lt; 40%): Strong candidate for filing.
+- POSSIBLY_NOVEL (40-70%): Needs refinement or narrower claims.
+- LIKELY_PRIOR_ART (&gt; 70%): Consider abandonment or major redesign.
+</code></pre>
+</div>
+
+<h2 id="notify">5. $ergane-notify Skill</h2>
+
+<div class="skill-card">
+<h4>File: skills/ergane-notify/SKILL.md</h4>
+<pre><code>---
+name: ergane-notify
+version: 1.0.0
+description: Format OpenClaw webhook payloads and GitHub PR comments
+trigger:
+  - "notify team"
+  - "send to Slack"
+  - "format notification"
+  - "$ergane-notify"
+---
+
+# Ergane Notification Formatting
+
+## OpenClaw Webhook Payload
+```json
+{
+  "invention_title": "Distributed Cache Invalidation via Vector Clocks",
+  "novelty_score": 0.87,
+  "risk_assessment": "NOVEL",
+  "inventor": "alice@company.com",
+  "commit_hash_short": "a1b2c3d",
+  "commit_url": "https://github.com/org/repo/commit/a1b2c3d",
+  "technical_problem": "Inconsistent cache state during network partitions",
+  "closest_patent_title": "Method for distributed cache synchronization",
+  "closest_patent_number": "US10,123,456",
+  "overall_similarity_score": 23.0,
+  "github_pr_url": "https://github.com/org/repo/pull/42",
+  "dismiss_url": "https://inventionguard.local/dismiss/42"
+}
+```
+
+## GitHub PR Comment Template
+```markdown
+## 🧠 Invention Detected
+
+| Field | Value |
+|---|---|
+| **Novelty Score** | {novelty_score}/1.0 ({novelty_assessment}) |
+| **Risk Assessment** | {risk_assessment} |
+| **Closest Prior Art** | {closest_patent_title} ({closest_patent_number}) |
+| **Similarity** | {overall_similarity_score}% |
+
+### Technical Problem
+{technical_problem}
+
+### Technical Solution
+{technical_solution}
+
+### Draft Independent Claim
+```
+{draft_independent_claim}
+```
+
+> ⚠️ **Disclaimer:** {disclaimer}
+
+### Recommendation
+{recommendation}
+
+---
+*Detected by Ergane | [Review Details]({github_pr_url}) | [OpenClaw Notification]({notification_url})*
+```
+</code></pre>
+</div>
+
+<h2 id="agents">6. Codex Sub-Agent TOML Configurations</h2>
+
+<h3>6.1 Explorer Agent</h3>
+<div class="agent-card">
+<pre><code>; .codex/agents/explorer.toml
+name = "Ergane-Explorer"
+description = "Reads code diffs and extracts technical problems and solutions"
+
+instructions = """
+You are a technical code analyst. Analyze diffs to identify patentable improvements.
+Output strict JSON. NEVER output legal advice.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "medium"
+</code></pre>
+</div>
+
+<h3>6.2 Implementer Agent</h3>
+<div class="agent-card">
+<pre><code>; .codex/agents/implementer.toml
+name = "Ergane-Implementer"
+description = "Generates Coral SQL and executes patent database searches"
+
+instructions = """
+You generate Coral DSL v3 SQL. Use ONLY corrected syntax from docs.
+Mistakes in table_functions or arguments will break the pipeline.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "medium"
+</code></pre>
+</div>
+
+<h3>6.3 Verifier Agent</h3>
+<div class="agent-card">
+<pre><code>; .codex/agents/verifier.toml
+name = "Ergane-Verifier"
+description = "Reviews draft claims for legal soundness and technical accuracy"
+
+instructions = """
+You are a CHECKER, not a writer. Grade claims critically.
+Ensure: proper language, no software-per-se, disclaimer present.
+"""
+
+model = "openai/gpt-5.6-sol"
+thinking = "high"
+</code></pre>
+</div>
+
+<h3>6.4 Reviewer Agent</h3>
+<div class="agent-card">
+<pre><code>; .codex/agents/reviewer.toml
+name = "Ergane-Reviewer"
+description = "Formats PR comments and OpenClaw payloads"
+
+instructions = """
+Format concise notifications. Engineers and attorneys read this.
+Be structured, be brief, be clear.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "low"
+</code></pre>
+</div>
+
+<h2 id="mcp">7. MCP Server Wiring</h2>
+
+<table>
+  <tr><th>Server</th><th>Type</th><th>Command</th><th>Purpose</th></tr>
+  <tr><td>coral</td><td>stdio</td><td><code>coral mcp-stdio</code></td><td>SQL-over-API patent search</td></tr>
+  <tr><td>gbrain</td><td>stdio</td><td><code>gbrain mcp</code></td><td>Agent memory (stretch)</td></tr>
+  <tr><td>github</td><td>stdio</td><td>Via GitHub Actions or <code>gh</code> CLI</td><td>PR comments, issues</td></tr>
+  <tr><td>openclaw</td><td>http</td><td>Gateway at localhost:18789</td><td>Slack/Discord notifications</td></tr>
+</table>
+
+<h2 id="install">8. Installation</h2>
+<pre><code># 1. Clone skill repo (optional — for reference)
+gh repo clone haidrrrry/loop-engineering-skills ~/skills/loop-engineering
+
+# 2. Install skills into Codex
+npx skills add withcoral/skills        # Coral SQL skills
+npx skills add ergane/skills           # Ergane skills (local)
+
+# 3. Install Ouro Loop
+pip install ouro-loop
+ouro-sentinel init .
+
+# 4. Setup Codex agents
+mkdir -p .codex/agents
+cp ~/skills/loop-engineering/.codex/agents/* .codex/agents/ 2>/dev/null || true
+
+# 5. Configure MCP
+codex mcp add coral -- coral mcp-stdio
+</code></pre>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center;">
+SKILL.html v1.0 | Ergane Skill & Agent Configuration | <strong>July 18, 2026</strong> | Compatible with Codex & Claude Code
+</p>
+
+</div>
+</body>
+</html>

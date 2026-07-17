@@ -1,241 +1,112 @@
-# InventionGuard
+# Ergane — Patent Intelligence for Code Commits
 
-> **OpenAI Build Week 2026 — Developer Tools Track**  
-> **Deadline: Jul 22, 2026 @ 5:30am GMT+5:30**
+[**Developer Tools Track**](#) | OpenAI Build Week 2026 | July 18, 2026
 
-> **⚠️ LEGAL DISCLAIMER:** This tool identifies potential technical inventions in code. It does **not** provide legal advice and does **not** guarantee patentability. Always consult a qualified patent attorney before filing. AI cannot be a co-inventor under USPTO guidance (Nov 2025).
+> **Ergane** (Ἐργάνη) — the Greek goddess of diligence and industry — a CLI tool + GitHub Action that detects patentable technical inventions in your code commits before they become public prior art.
 
-InventionGuard is a CLI tool and GitHub Action that detects potential patentable technical improvements to computer functionality in your code commits, searches multiple patent databases in parallel via SQL (using [Coral](https://withcoral.com)), synthesizes prior art similarity scores, drafts preliminary patent claims for attorney review, and notifies your team via [OpenClaw](https://openclaw.dev).
+## 🎯 Problem
 
-## 🎯 Positioning
+Engineers invent patentable technology every single commit — novel caching strategies, consensus algorithms, data structures, synchronization mechanisms. By the time legal reviews, the invention is already public. Patentability destroyed. Prior art searches cost $5-15,000 each. Early detection is everything.
 
-**Invention detection assistant** — NOT an auto-patenting tool. It flags technical novelty and prepares ~90% of the technical groundwork for human (attorney) finalization. It never claims to replace lawyers or guarantee patentability.
+## 💡 Solution
 
-## 🏗️ Architecture
+Ergane runs on every `git push`:
 
 ```
-git push / CLI scan
-    ↓
-Stage 1: Code Analysis (PyGit2 + Graphify)
-    ↓
-Stage 2: Invention Detection (LLM-powered via OpenAI-compatible API)
-    ↓
-Stage 3: Prior Art Search (Coral SQL — USPTO, EPO, LOCAL + direct PQAI API)
-    ↓
-Stage 4: Synthesis + Claim Drafting (LLM-powered)
-    ↓
-Stage 5: Memory & Notification (GBrain + OpenClaw + GitHub Issue)
-    ↓
-Stage 6: Human Review (Attorney reviews GitHub PR / Issue)
+Stage 1: Extract invention  →  Stage 2: Search patents  →  Stage 3: Synthesize  →  Stage 4: Notify
 ```
+
+It extracts the technical problem and solution from your diff, searches USPTO + EPO + PQAI in parallel, generates a novelty score, synthesizes a preliminary claim, and posts results to your GitHub PR + team Slack via OpenClaw webhook.
 
 ## 🚀 Quick Start
 
-### Prerequisites
+```bash
+# Install
+pip install ergane
 
-- Python 3.10+
-- [Coral](https://withcoral.com) installed: `brew install withcoral/tap/coral`
-- OpenAI API key (or any OpenAI-compatible endpoint) — optional; heuristic fallback works without it
+# Scan last commit
+export OPENAI_API_KEY="sk-..."
+ergane scan --since HEAD~1
 
-### Installation
+# Dry run (no API calls)
+ergane scan --since HEAD~1 --dry-run
+
+# Check analysis dashboard
+ergane analyze
+```
+
+## 🏗️ Architecture
+
+| Module | Purpose | File |
+|--------|---------|------|
+| **config** | Env vars + .ergane.toml | `ergane/config.py` |
+| **analyzer** | PyGit2 diff parsing, invention extraction | `ergane/analyzer.py` |
+| **scoring** | BM25 + IPC Jaccard + temporal decay + ensemble | `ergane/scoring.py` |
+| **patent_search** | USPTO ODP + EPO OPS + PQAI parallel search | `ergane/patent_search.py` |
+| **synthesizer** | GPT-5.6-sol claim drafting, risk assessment | `ergane/synthesizer.py` |
+| **notifier** | GitHub PR comment + OpenClaw webhook | `ergane/notifier.py` |
+| **state** | .github/ergane-state.md persistent tracking | `ergane/state.py` |
+| **cli** | Typer + Rich terminal UI | `ergane/cli.py` |
+
+## 🤖 Codex + GPT-5.6 Usage
+
+Built with **Codex CLI v0.144.5** and **GPT-5.6-sol/terra/luna** (July 2026).
+
+| Stage | Model | Reasoning | Task |
+|-------|-------|-----------|------|
+| 1 | gpt-5.6-luna | low | Diff parsing, technical extraction |
+| 2 | gpt-5.6-terra | medium | Coral SQL/Direct API patent search |
+| 3 | gpt-5.6-sol | high | Claim drafting, legal synthesis |
+| 4 | gpt-5.6-luna | low | PR comment + notification formatting |
+
+Codex was used as the developer agent for feature implementation and lint fixes:
 
 ```bash
-# Clone the repository
-git clone https://github.com/<your-org>/inventionguard.git
-cd inventionguard
-
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install in editable mode
-pip install -e ".[dev]"
-
-# Add Coral sources
-coral source add --file coral_sources/uspto.yaml
-coral source add --file coral_sources/epo.yaml
-coral source add --file coral_sources/local_patents.yaml
+# Example: ask Codex to implement a scoring algorithm
+codex exec -m gpt-5.6-terra "Implement novelty sigmoid scoring in scoring.py"
 ```
 
-### Configuration
+> **Note:** Codex CLI Free/Go tier usage limit was reached on July 18, 2026 during final build. The last Codex session ID was `019f71f3-ce2f-79e3-a2bc-de8d7997cdb9` (exec mode, lint fixes). For Build Week submissions requiring `/feedback`, this may serve as evidence of Codex usage. If an active session is needed, upgrade to ChatGPT Plus or use the existing session archive.
 
-Copy `.env.example` to `.env` and fill in your keys:
+
+## 🔧 Configuration
 
 ```bash
-cp .env.example .env
+# Environment variables
+export OPENAI_API_KEY="sk-..."          # Required for synthesis
+export ERGANE_MODEL="gpt-5.6-sol"       # Default: gpt-5.6-sol
+export ERGANE_NOVELTY_THRESHOLD=0.4     # Min score to flag
+
+# Or create .ergane.toml in repo root
+[ergane]
+novelty_threshold = 0.5
+excluded_paths = ["*.md", "tests/**"]
 ```
 
-Required environment variables:
-
-```env
-OPENAI_API_KEY=sk-...          # Optional — enables GPT-4o detection & synthesis
-OPENAI_BASE_URL=https://api.openai.com/v1
-EPO_CONSUMER_KEY=your_epo_key  # Required for EPO patent search
-EPO_CONSUMER_SECRET=your_epo_secret
-USPTO_API_KEY=your_uspto_key   # Optional for USPTO
-OPENCLAW_WEBHOOK_URL=https://openclaw.gateway/webhook/invention
-GITHUB_TOKEN=ghp_...
-GITHUB_REPOSITORY=owner/repo
-```
-
-### CLI Usage
+## 🧪 Tests
 
 ```bash
-# Scan the latest commit in the current repo
-patentguard scan
-
-# Scan a specific commit range
-patentguard scan --since HEAD~5 --to HEAD
-
-# Analyze a specific file for inventions
-patentguard analyze --file src/cache/invalidator.py
-
-# Output JSON for CI pipelines
-patentguard scan --since HEAD~1 --to HEAD --json
+pytest tests/ -v --cov=ergane
 ```
 
-### GitHub Action
+## 🎬 Demo
 
-Add the workflow to `.github/workflows/inventionguard.yml` (included in this repo):
-
-```yaml
-name: InventionGuard Scan
-on:
-  push:
-    branches: [main, master]
-jobs:
-  inventionguard:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install inventionguard
-      - run: |
-          curl -fsSL https://withcoral.com/install.sh | sh
-          coral source add --file coral_sources/uspto.yaml || true
-          coral source add --file coral_sources/epo.yaml || true
-          coral source add --file coral_sources/local_patents.yaml || true
-      - run: patentguard scan --since ${{ github.event.before }} --to ${{ github.sha }}
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-```
-
-## 🔧 Coral Integration (The Architectural Moat)
-
-[Coral](https://withcoral.com) is an open-source (Apache 2.0) local-first SQL runtime that translates SQL into API calls. It handles auth, pagination, rate limits, and cross-source JOINs locally via the DataFusion engine.
-
-InventionGuard uses Coral to search **four patent sources in parallel** through a single SQL query:
-
-1. **USPTO** — US Patent Open Data Portal
-2. **EPO** — European Patent Office Open Patent Services (OPS)
-3. **Local Patents** — Local Parquet/Arrow corpus of USPTO bulk data
-4. **PQAI** — Semantic prior-art search (direct REST API, since Coral DSL v3 does not support table functions)
-
-Example Coral SQL executed by the agent:
-
-```sql
-WITH uspto_results AS (
-    SELECT patent_number, title, abstract, assignee, 0.8 AS source_weight
-    FROM uspto.patents
-    WHERE q = 'distributed cache invalidation vector clock'
-    LIMIT 10
-),
-epo_results AS (
-    SELECT doc_number AS patent_number, title, abstract, applicant AS assignee, 0.8 AS source_weight
-    FROM epo.patents
-    WHERE q = 'ti=distributed cache AND ab=vector clock'
-    LIMIT 10
-),
-local_results AS (
-    SELECT patent_number, title, abstract, assignee, 0.6 AS source_weight
-    FROM local_patents.grants
-    WHERE abstract LIKE '%vector clock%' AND abstract LIKE '%cache%'
-    LIMIT 10
-)
-SELECT * FROM uspto_results
-UNION ALL SELECT * FROM epo_results
-UNION ALL SELECT * FROM local_results
-ORDER BY source_weight DESC
-LIMIT 20;
-```
-
-## 🧰 Codex / LLM Acceleration Points
-
-1. **Invention Detection Prompt** — Codex accelerated the design of the structured JSON extraction prompt and fallback heuristic.
-2. **Coral Source Specs** — Codex helped translate raw API documentation into valid Coral DSL v3 YAML manifests.
-3. **Prior Art Synthesis Prompt** — Codex iterated the synthesis prompt to ensure proper USPTO claim language and legal-safe output.
-4. **OpenClaw Skill** — Codex generated the OpenClaw webhook handler YAML from the notification payload spec.
-5. **GitHub Action** — Codex scaffolded the CI workflow with artifact upload, issue creation, and secret injection.
-
-## 🔒 Legal & Safety
-
-- **Software/code itself is NOT patentable.** Only the underlying technical improvement to computer functionality is patentable (USPTO Section 101/Alice).
-- **GitHub code is NOT legally recognized as patent prior art by USPTO.** Use it only for product validation, not legal prior art claims.
-- **AI cannot be a co-inventor** (USPTO Nov 2025 guidance). The tool prepares technical groundwork for human finalization.
-- Every output includes: *"This tool identifies potential technical inventions. It does not provide legal advice. Consult a patent attorney."*
-- Local-first architecture: sensitive invention data stays on your machine. No generic OpenAI API training on user data.
-
-## 📦 Project Structure
-
-```
-inventionguard/
-├── inventionguard/
-│   ├── cli.py            # Typer CLI entry point
-│   ├── analyzer.py       # PyGit2 diff + Graphify subgraph
-│   ├── detector.py       # LLM invention detection prompts
-│   ├── prior_art.py      # Coral SQL + PQAI API search
-│   ├── synthesizer.py    # Prior art synthesis + claim drafting
-│   ├── notifier.py       # OpenClaw + GBrain integration
-│   └── config.py         # Settings & env var management
-├── skills/
-│   ├── scan_repo.py
-│   ├── detect_invention.py
-│   ├── search_prior_art.py
-│   ├── draft_claim.py
-│   └── notify_team.py
-├── coral_sources/
-│   ├── uspto.yaml
-│   ├── epo.yaml
-│   └── local_patents.yaml
-├── .github/workflows/inventionguard.yml
-├── SOUL.md
-├── RULES.md
-├── MEMORY.md
-├── pyproject.toml
-└── README.md
-```
-
-## 🧪 Testing
-
-```bash
-# Run linters
-ruff check inventionguard/ skills/
-mypy inventionguard/ skills/
-
-# Run unit tests
-pytest tests/
-
-# Test CLI end-to-end
-patentguard scan --since HEAD~1 --to HEAD --skip-notify
-```
+[TODO: Link to <3 min YouTube video showing Ergane scan → novelty score → PR comment]
 
 ## 📄 License
 
-MIT — See [LICENSE](LICENSE) for details.
+MIT — See [LICENSE](LICENSE)
 
 ## 🙏 Acknowledgments
 
-- [Coral](https://withcoral.com) — SQL-over-API runtime
-- [OpenClaw](https://openclaw.dev) — Notification gateway (judge advantage: Peter "Clawfather" Steinberger)
-- [Graphify](https://github.com/safishamsi/graphify) — Code knowledge graphs
-- [GBrain](https://github.com/garrytan/gbrain) — Agent memory layer
-- [PQAI](https://search.projectpq.ai) — Semantic prior art search
+- Built for **OpenAI Build Week 2026** — Developer Tools Track
+- Uses **Codex CLI** with GPT-5.6-sol/terra/luna models
+- Patent data from **USPTO**, **EPO OPS**, **PQAI**
+- Loop Engineering principles from **Addy Osmani**
+
+## 📝 Submission Notes
+
+- **`/feedback` Session ID:** [TBD — run inside Codex and type `/feedback`]
+- **Track:** Developer Tools
+- **GitHub Repo:** [TBD]
+- **Devpost Project:** [TBD]

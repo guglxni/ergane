@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergane — Agent Loop Engineering & Sub-Agent Configuration</title>
+<style>
+  :root { --bg:#0d1117; --fg:#c9d1d9; --accent:#58a6ff; --accent2:#7ee787; --warn:#f85149; --muted:#8b949e; --code:#161b22; --border:#30363d; }
+  * { box-sizing:border-box; }
+  body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; margin:0; padding:0; }
+  .container { max-width:1200px; margin:0 auto; padding:2rem; }
+  h1 { color:var(--accent); font-size:2.2rem; margin:0; }
+  h2 { color:var(--accent2); border-bottom:1px solid var(--border); padding-bottom:.3rem; margin-top:2.5rem; }
+  h3 { color:var(--accent); margin-top:1.8rem; }
+  h4 { color:#79c0ff; }
+  .badge { display:inline-block; padding:.12rem .5rem; border-radius:4px; font-size:.75rem; font-weight:600; margin-right:.3rem; }
+  .badge-rule { background:#238636; color:#fff; }
+  .badge-gate { background:#1f6feb; color:#fff; }
+  .badge-phase { background:#8957e5; color:#fff; }
+  .badge-warn { background:var(--warn); color:#fff; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:.9rem; }
+  th, td { border:1px solid var(--border); padding:.5rem .75rem; text-align:left; }
+  th { background:var(--code); color:var(--accent); font-weight:600; }
+  tr:nth-child(even) { background:rgba(255,255,255,.02); }
+  code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:.15rem .35rem; border-radius:4px; font-size:.85rem; }
+  pre { font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace; background:var(--code); padding:1rem; overflow-x:auto; border:1px solid var(--border); border-radius:6px; }
+  .rule-block { background:rgba(35,134,54,.08); border-left:4px solid #238636; padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .gate-block { background:rgba(31,111,235,.08); border-left:4px solid #1f6feb; padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .warn-block { background:rgba(248,81,73,.08); border-left:4px solid var(--warn); padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .phase-block { background:rgba(137,87,229,.08); border-left:4px solid #8957e5; padding:1rem; margin:1rem 0; border-radius:0 6px 6px 0; }
+  .toc { position:sticky; top:1rem; float:right; width:260px; margin-left:2rem; background:var(--code); border:1px solid var(--border); border-radius:8px; padding:1rem; font-size:.82rem; }
+  .toc h4 { margin-top:0; }
+  .toc ul { list-style:none; padding-left:0; }
+  .toc a { color:var(--accent); text-decoration:none; }
+  @media(max-width:900px){ .toc { float:none; width:100%; margin:0 0 2rem; position:static; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header style="border-bottom:1px solid var(--border); padding-bottom:1rem; margin-bottom:2rem;">
+  <h1>🤖 Ergane — Agent Loop Engineering</h1>
+  <p style="color:var(--muted); margin:.5rem 0 0;">Six-piece loop architecture | Ouro Loop verification gates | AWS AI-DLC v2 | Codex subagent configuration</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#philosophy">1. Philosophy</a></li>
+    <li><a href="#six">2. The Six Pieces</a></li>
+    <li><a href="#ouro">3. Ouro Loop Gates</a></li>
+    <li><a href="#aidlc">4. AWS AI-DLC v2</a></li>
+    <li><a href="#contract">5. Loop Contract</a></li>
+    <li><a href="#subagents">6. Sub-Agent Config</a></li>
+    <li><a href="#skills">7. Skill Definitions</a></li>
+    <li><a href="#worktrees">8. Worktree Isolation</a></li>
+    <li><a href="#state">9. State Management</a></li>
+    <li><a href="#anti">10. Anti-Patterns</a></li>
+    <li><a href="#install">11. Installation Commands</a></li>
+  </ul>
+</nav>
+
+<h2 id="philosophy">1. Philosophy</h2>
+
+<blockquote style="border-left:3px solid var(--accent); padding-left:1rem; color:var(--muted); font-style:italic;">
+"You shouldn't be prompting coding agents anymore. You should be designing loops that prompt your agents."<br>
+— Peter Steinberger, "Clawfather" (OpenAI, creator of OpenClaw)
+</blockquote>
+
+<blockquote style="border-left:3px solid var(--accent); padding-left:1rem; color:var(--muted); font-style:italic;">
+"I don't prompt Claude anymore. I have loops running that prompt Claude and figuring out what to do. My job is to write loops."<br>
+— Boris Cherny, Head of Claude Code, Anthropic
+</blockquote>
+
+<p><strong>Loop Engineering</strong> is the practice of replacing yourself as the person who prompts the agent and instead designing the <em>system</em> that does it. A loop is a recursive goal: you define purpose, and the AI iterates until complete.</p>
+
+<p>The leverage point moved from <strong>prompt engineering</strong> (writing good prompts) to <strong>loop design</strong> (designing systems with verifiable stop conditions, isolation, verification, and state persistence).</p>
+
+<h2 id="six">2. The Six Pieces of an Ergane Loop</h2>
+
+<table>
+  <tr><th>#</th><th>Piece</th><th>Job</th><th>Ergane Implementation</th><th>Tool</th></tr>
+  <tr><td>1</td><td><strong>Automations</strong></td><td>Heartbeat — discovery + triage on schedule</td><td>Git push → GitHub Action → <code>ergane scan</code></td><td>GitHub Actions + Codex <code>/goal</code></td></tr>
+  <tr><td>2</td><td><strong>Worktrees</strong></td><td>Isolation — parallel agents don't collide</td><td>Each subagent gets <code>git worktree</code></td><td>Git native</td></tr>
+  <tr><td>3</td><td><strong>Skills</strong></td><td>Codified project knowledge</td><td>$ergane-detect, $ergane-prior-art, $ergane-synthesize</td><td>Codex/Claude Skills</td></tr>
+  <tr><td>4</td><td><strong>Connectors</strong></td><td>Touch real tools via MCP</td><td>Coral MCP, OpenClaw MCP, GitHub MCP</td><td>MCP stdio</td></tr>
+  <tr><td>5</td><td><strong>Sub-agents</strong></td><td>Maker ≠ Checker</td><td>Explorer, Implementer, Verifier, Reviewer</td><td>Codex TOML agents</td></tr>
+  <tr><td>6</td><td><strong>State</strong></td><td>Memory on disk (model forgets)</td><td>.github/ergane-state.md</td><td>Markdown</td></tr>
+</table>
+
+<h3>2.1 Primitive Matrix (Codex vs Claude Code)</h3>
+
+<table>
+  <tr><th>Primitive</th><th>Job</th><th>Codex</th><th>Claude Code</th></tr>
+  <tr><td>Automations</td><td>Scheduled discovery + triage</td><td>Automations tab, <code>/goal</code>, <code>/loop</code></td><td><code>/loop</code>, scheduled tasks, hooks, GitHub Actions</td></tr>
+  <tr><td>Worktrees</td><td>Isolate parallel features</td><td>Built-in per thread</td><td><code>git worktree</code>, <code>--worktree</code>, <code>isolation: worktree</code></td></tr>
+  <tr><td>Skills</td><td>Codify conventions</td><td><code>SKILL.md</code>, invoke with <code>$name</code></td><td><code>SKILL.md</code>, invoke implicitly</td></tr>
+  <tr><td>Connectors</td><td>Integrate tools</td><td>MCP servers</td><td>MCP servers</td></tr>
+  <tr><td>Sub-agents</td><td>Split maker/checker</td><td><code>.codex/agents/*.toml</code></td><td><code>.claude/agents/</code>, agent teams</td></tr>
+  <tr><td>State</td><td>Persistent memory</td><td>Markdown or Linear via connector</td><td>Markdown (<code>AGENTS.md</code>, progress files)</td></tr>
+</table>
+
+<h2 id="ouro">3. Ouro Loop Verification Gates</h2>
+
+<p>From <a href="https://github.com/VictorVVedtion/ouro-loop">VictorVVedtion/ouro-loop</a> — structured autonomous loop with guardrails.</p>
+
+<pre><code>pip install ouro-loop
+ouro-sentinel init .        # scan project, generate partitions + config
+ouro-sentinel install .     # install runner + dashboard scripts
+ouro-sentinel status .      # check iteration/findings/coverage
+</code></pre>
+
+<table>
+  <tr><th>Gate</th><th>Full Name</th><th>Check</th><th>Ergane Application</th></tr>
+  <tr><td><span class="badge badge-gate">G1</span></td><td><strong>EXIST</strong></td><td>Output exists and is non-empty</td><td>Detection JSON contains technical_problem, technical_solution, novelty_score fields. Empty → reject immediately.</td></tr>
+  <tr><td><span class="badge badge-gate">G2</span></td><td><strong>RELEVANCE</strong></td><td>Output addresses actual problem</td><td>IPC suggestion matches file domain (e.g., G06F for compute). Commit message semantically aligns with diff content.</td></tr>
+  <tr><td><span class="badge badge-gate">G3</span></td><td><strong>ROOT_CAUSE</strong></td><td>Fixes right thing, not symptom</td><td>Novelty assessed for <em>underlying</em> technical improvement (algorithm/architecture), not surface code change (variable rename).</td></tr>
+  <tr><td><span class="badge badge-gate">G4</span></td><td><strong>MOMENTUM</strong></td><td>Progress measurable since last iteration</td><td>Coral returns ≥1 result per source. Similarity score decreases vs previous run for same invention domain.</td></tr>
+  <tr><td><span class="badge badge-gate">G5</span></td><td><strong>RECALL</strong></td><td>Loop remembers what was done</td><td><code>ergane-state.md</code> updated with invention ID, date, novelty score, status. Next run reads state before starting.</td></tr>
+</table>
+
+<div class="gate-block">
+<strong>Gate Enforcement:</strong> Each subagent's output MUST pass all 5 gates before flowing to the next stage. Failed gate → retry (max 3) → escalate to human inbox if still failing.
+</div>
+
+<h2 id="aidlc">4. AWS AI-DLC v2 Integration</h2>
+
+<p>From <a href="https://github.com/awslabs/aidlc-workflows">awslabs/aidlc-workflows</a> — AI-Driven Development Life Cycle adaptive workflow steering rules.</p>
+
+<h3>4.1 Download & Setup</h3>
+<pre><code># Download latest release
+wget https://github.com/awslabs/aidlc-workflows/releases/download/v1.0.1/ai-dlc-rules-v1.0.1.zip
+unzip ai-dlc-rules-v1.0.1.zip -d .aidlc/
+
+# For Codex: create AGENTS.md
+mkdir -p .codex
+cat &gt; .codex/AGENTS.md &lt;&lt; 'EOF'
+When the user invokes AI-DLC, read and follow
+.aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md to start the workflow.
+EOF
+</code></pre>
+
+<h3>4.2 Three-Phase Adaptive Workflow</h3>
+
+<div class="phase-block">
+<strong>Phase 1: Inception</strong>
+<ul>
+  <li>Clarify requirements and constraints</li>
+  <li>Set acceptance criteria (verifiable stop conditions)</li>
+  <li>Create loop contract (11-part)</li>
+  <li>Choose subagent model assignments</li>
+</ul>
+</div>
+
+<div class="phase-block">
+<strong>Phase 2: Construction</strong>
+<ul>
+  <li>Agent runs with maker ≠ checker split</li>
+  <li>Each subagent in isolated worktree</li>
+  <li>State written to disk after every turn</li>
+  <li>Ouro Loop gates checked at phase boundaries</li>
+  <li>Boundaries enforced: time limit, token limit, scope limit</li>
+</ul>
+</div>
+
+<div class="phase-block">
+<strong>Phase 3: Transition</strong>
+<ul>
+  <li>Final verification against stop conditions</li>
+  <li>Human review before any merge (NEVER auto-merge unattended)</li>
+  <li>State archived for tomorrow's run</li>
+  <li>Escalation inbox updated if work is stuck or risky</li>
+</ul>
+</div>
+
+<h3>4.3 Platform-Specific Steering Files</h3>
+<table>
+  <tr><th>Tool</th><th>Steering File</th><th>Content</th></tr>
+  <tr><td>Codex</td><td><code>.codex/AGENTS.md</code></td><td>Read .aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md</td></tr>
+  <tr><td>Claude Code</td><td><code>CLAUDE.md</code></td><td>Read .aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md</td></tr>
+  <tr><td>Cursor</td><td><code>.cursor/rules/ai-dlc.mdc</code></td><td>With frontmatter: --- description: "AI-DLC workflow" alwaysApply: true ---</td></tr>
+  <tr><td>GitHub Copilot</td><td><code>.github/copilot-instructions.md</code></td><td>Read .aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md</td></tr>
+  <tr><td>Any other</td><td><code>AGENTS.md</code></td><td>Read .aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md</td></tr>
+</table>
+
+<h2 id="contract">5. Ergane Loop Contract (11-Part)</h2>
+
+<p>EVERY loop MUST define these 11 elements before running. No exceptions.</p>
+
+<table>
+  <tr><th>#</th><th>Element</th><th>Ergane Definition</th><th>Validation</th></tr>
+  <tr><td>1</td><td>Purpose</td><td>Detect patentable technical inventions in code commits</td><td>Must fit in one sentence</td></tr>
+  <tr><td>2</td><td>Trigger</td><td>Git push (GitHub Action) or manual <code>ergane scan</code></td><td>Must be specific event, not "when I feel like it"</td></tr>
+  <tr><td>3</td><td>Triage criteria</td><td>Novelty score ≥ 0.4 AND key_claim_elements non-empty AND IPC suggestion present</td><td>All three must be true</td></tr>
+  <tr><td>4</td><td>Boundaries</td><td>NEVER auto-file patents. NEVER process private repos without permission. NEVER claim software per se is patentable.</td><td>Hard-coded in RULES.md</td></tr>
+  <tr><td>5</td><td>Stop conditions</td><td>(a) ergane scan exits 0, (b) novelty_score &lt; 0.4 for all diffs, (c) timeout after 300 seconds</td><td>Verifiable, not subjective</td></tr>
+  <tr><td>6</td><td>Turn/time limit</td><td>300 seconds per pipeline. Max 20 patent records from Coral. Max 3 LLM calls per run.</td><td>Safety bound against infinite burn</td></tr>
+  <tr><td>7</td><td>Skill dependencies</td><td>$ergane-detect, $ergane-prior-art, $ergane-synthesize (mandatory). $ergane-notify (optional).</td><td>Skills must exist in ~/.hermes/skills/ or repo skills/</td></tr>
+  <tr><td>8</td><td>Connector dependencies</td><td>Coral MCP running. GitHub token present. OpenAI API key valid.</td><td>Pre-flight check before loop starts</td></tr>
+  <tr><td>9</td><td>Verification gate</td><td>Ouro Loop: EXIST + RELEVANCE + ROOT_CAUSE + MOMENTUM + RECALL</td><td>Gate output logged to state file</td></tr>
+  <tr><td>10</td><td>Escalation path</td><td>Blocked work → GitHub PR comment with "needs-attorney-review" label. Human reviews within 48h.</td><td>No auto-approval, ever</td></tr>
+  <tr><td>11</td><td>State file location</td><td><code>.github/ergane-state.md</code></td><td>Must be in version control</td></tr>
+</table>
+
+<h2 id="subagents">6. Sub-Agent Configuration (Codex TOML)</h2>
+
+<p>All agents live in <code>.codex/agents/</code>. Each is a separate file with distinct instructions, model, and reasoning effort.</p>
+
+<h3>6.1 Explorer Agent — Code Understanding</h3>
+<pre><code>; .codex/agents/explorer.toml
+name = "Ergane-Explorer"
+description = "Reads code diffs and Graphifyy subgraphs to identify technical problems and solutions"
+
+instructions = """
+You are a technical code analyst specializing in identifying patentable improvements
+to computer functionality.
+
+INPUT FORMAT:
+- Code diff: {diff}
+- Commit message: {commit_message}
+- Graphifyy subgraph: {subgraph}  (JSON with function/class nodes and edges)
+- Files changed: {files_changed}
+
+YOUR TASK:
+1. Identify the technical problem being solved (not the business problem).
+2. Identify the technical solution implemented.
+3. Assess whether this is a novel improvement to computer functionality,
+   not merely an abstract idea, business method, or routine implementation.
+
+OUTPUT: Strict JSON only:
+{
+  "technical_problem": "string",
+  "technical_solution": "string",
+  "novelty_score": float (0.0-1.0),
+  "novelty_assessment": "HIGH|MEDIUM|LOW",
+  "key_claim_elements": ["string"],
+  "rationale": "string explaining patentability assessment",
+  "ipc_suggestion": "string (suggested IPC/CPC code)"
+}
+
+RULES:
+- HIGH: novel algorithm, architectural improvement, or optimization with no obvious prior art.
+- MEDIUM: improvement on known technique with non-obvious twist.
+- LOW: routine implementation, standard library, UI change, business logic.
+- If novelty_score &lt; 0.4, set "skip": true.
+- NEVER output legal advice. Only technical analysis.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "medium"
+</code></pre>
+
+<h3>6.2 Implementer Agent — Coral SQL & API Calls</h3>
+<pre><code>; .codex/agents/implementer.toml
+name = "Ergane-Implementer"
+description = "Generates Coral DSL v3 SQL for patent prior art search and executes searches"
+
+instructions = """
+You generate Coral DSL v3 compatible SQL for patent prior art search.
+
+CORRECT CORAL SYNTAX (validated against withcoral.com/docs):
+- Use `functions:` not `table_functions:`. Use `args:` not `arguments:`.
+- HTTP function args use `bind: {arg: name}` pattern.
+- Search limits use `default_top_k`, `max_top_k`, `max_calls_per_query`.
+- Request body uses array with `path:`, `from: arg`, `key:` entries.
+- Response columns must be explicitly declared.
+
+AVAILABLE SOURCES:
+- uspto.patents — US applications filed since 2001 (POST /api/v1/patent/applications/search)
+- epo.patents — EPO documents (GET /rest-services/published-data/search, CQL syntax)
+- pqai.search_patents — Semantic search (GET /search/102)
+- local_patents.grants — Local parquet corpus
+
+GENERATE SQL PATTERN:
+WITH source_a AS (SELECT ..., weight FROM uspto.patents WHERE q = '...' LIMIT 10),
+     source_b AS (SELECT ..., weight FROM epo.patents WHERE q = '...' LIMIT 10),
+     source_c AS (SELECT ..., weight FROM pqai.search_patents(query => '...') LIMIT 10)
+SELECT * FROM source_a UNION ALL ... ORDER BY weight DESC LIMIT 20;
+
+OUTPUT: The SQL query string only. No prose.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "medium"
+</code></pre>
+
+<h3>6.3 Verifier Agent — Claim Soundness</h3>
+<pre><code>; .codex/agents/verifier.toml
+name = "Ergane-Verifier"
+description = "Reviews draft patent claims for legal soundness, technical accuracy, and completeness"
+
+instructions = """
+You are a patent claim analyst. You are a CHECKER, not a writer.
+You review draft claims created by another agent.
+
+INPUT:
+- Invention: {technical_problem}, {technical_solution}, {key_claim_elements}
+- Prior art table: {cor_results}
+- Draft claim: {draft_independent_claim}
+
+YOUR TASK:
+1. Verify the claim uses proper patent language: "A method comprising...", "A system comprising..."
+2. Verify the claim includes ALL essential elements from key_claim_elements.
+3. Verify the claim does NOT claim software per se.
+4. Verify the disclaimer "Preliminary draft for attorney review only." is present.
+5. Assess similarity to each prior art patent (0-100%).
+6. Determine if the invention is anticipated by a single reference or rendered obvious by combination.
+
+OUTPUT JSON:
+{
+  "overall_similarity_score": float (0-100),
+  "closest_patent": {"patent_number": "", "title": "", "source": "", "similarity_score": float},
+  "risk_assessment": "NOVEL|POSSIBLY_NOVEL|LIKELY_PRIOR_ART",
+  "analysis": "string",
+  "draft_independent_claim": "string (corrected if needed)",
+  "recommendation": "PROCEED_WITH_FILING|REFINE_INVENTION|ABANDON",
+  "disclaimer_present": boolean,
+  "claim_language_valid": boolean
+}
+
+BE CRITICAL. You did NOT write this claim. Grade it honestly.
+"""
+
+model = "openai/gpt-5.6-sol"
+thinking = "high"
+"""
+
+<h3>6.4 Reviewer Agent — Notification & State</h3>
+<pre><code>; .codex/agents/reviewer.toml
+name = "Ergane-Reviewer"
+description = "Formats notifications and updates state files"
+
+instructions = """
+You prepare the final output for human review and team notification.
+
+INPUT:
+- Detection JSON
+- Synthesis JSON
+- Prior art results table
+- Repository metadata (owner, name, commit URL)
+
+YOUR TASK:
+1. Format a GitHub PR comment with:
+   - Technical Problem / Solution
+   - Novelty Score with visual indicator
+   - Prior Art comparison table
+   - Draft Independent Claim (with disclaimer)
+   - Recommendation
+   - Next steps for attorney review
+
+2. Format an OpenClaw webhook payload:
+   - invention_title, novelty_score, risk_assessment
+   - inventor, commit_hash, commit_url
+   - technical_problem, closest_patent
+   - github_pr_url
+
+3. Update .github/ergane-state.md with new entry.
+
+OUTPUT: Structured data (PR comment markdown + webhook JSON + state markdown).
+Be concise. Engineers and attorneys read this.
+"""
+
+model = "openai/gpt-5.6-luna"
+thinking = "low"
+</code></pre>
+
+<h2 id="skills">7. Skill Definitions</h2>
+
+<p>Skills live in <code>skills/</code> (repo) or <code>~/.hermes/skills/</code> (Hermes). Each is a folder with <code>SKILL.md</code>.</p>
+
+<h3>7.1 $ergane-detect</h3>
+<pre><code># skills/ergane-detect/SKILL.md
+---
+name: ergane-detect
+trigger:
+  - "analyze this diff for patentable inventions"
+  - "what technical improvements are in this commit"
+  - "detect inventions"
+---
+
+# Ergane Invention Detection
+
+Analyze code diffs to identify potential patentable technical improvements.
+
+## Input
+- Git diff patch
+- Commit message
+- Graphifyy AST subgraph (JSON)
+- List of files changed
+
+## Output
+JSON with: technical_problem, technical_solution, novelty_score (0-1),
+novelty_assessment (HIGH/MEDIUM/LOW), key_claim_elements[], rationale,
+icp_suggestion.
+
+## Rules
+- Software per se is NOT patentable (Alice Corp §101).
+- Only flag POTENTIAL inventions. Never claim guaranteed patentability.
+- Include disclaimer: "Preliminary draft for attorney review only."
+</code></pre>
+
+<h3>7.2 $ergane-prior-art</h3>
+<pre><code># skills/ergane-prior-art/SKILL.md
+---
+name: ergane-prior-art
+trigger:
+  - "search patent databases"
+  - "find prior art for this invention"
+  - "coral sql for patents"
+---
+
+# Ergane Prior Art Search
+
+Generate Coral DSL v3 SQL to search patent databases.
+
+## Available Sources
+- uspto.patents — US applications (free, data.uspto.gov)
+- epo.patents — EPO documents (free, developers.epo.org)
+- pqai.search_patents — Semantic search (free, api.projectpq.ai)
+- local_patents.grants — Local corpus (optional)
+
+## Output
+Valid Coral SQL query. Must use corrected DSL v3 syntax:
+`functions:`, `args:`, `bind:`, `default_top_k`, etc.
+
+## Rules
+- Parallel search across ≥2 sources per query.
+- Limit to 10 per source, 20 total.
+- Use UNION ALL with source_weight for ranking.
+</code></pre>
+
+<h3>7.3 $ergane-synthesize</h3>
+<pre><code># skills/ergane-synthesize/SKILL.md
+---
+name: ergane-synthesize
+trigger:
+  - "compare against prior art"
+  - "synthesize patent analysis"
+  - "draft patent claims"
+---
+
+# Ergane Synthesis & Claim Drafting
+
+Compare detected invention against Coral prior art results.
+
+## Input
+- Invention JSON (problem, solution, claim elements)
+- Prior art table (top 10 patents)
+
+## Output
+JSON with: overall_similarity_score, closest_patent {}, risk_assessment,
+draft_independent_claim, recommendation.
+
+## Rules
+- Use proper claim language: "A method comprising..."
+- Independent claim must include all essential elements.
+- Dependent claims add optional but valuable limitations.
+- NEVER claim software per se.
+- Always include disclaimer.
+</code></pre>
+
+<h2 id="worktrees">8. Worktree Isolation</h2>
+
+<p>Every subagent MUST run in its own worktree. Two agents writing the same file is the exact same headache as two engineers committing to the same lines.</p>
+
+<pre><code>#!/bin/bash
+# worktree-manager.sh — isolate subagent checkouts
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+AGENT_ID=${1:-agent-$(date +%s)}
+WORKTREE="$REPO_ROOT/.worktrees/$AGENT_ID"
+
+# Create worktree
+git worktree add --detach "$WORKTREE"
+cd "$WORKTREE"
+
+# Run agent task
+# ... (agent code here) ...
+
+# Merge results back (if approved)
+git add .
+git commit -m "Ergane: $AGENT_ID analysis"
+
+# Cleanup
+cd "$REPO_ROOT"
+git worktree remove "$WORKTREE"
+rm -rf "$WORKTREE"
+</code></pre>
+
+<h2 id="state">9. State Management</h2>
+
+<p>The model forgets everything between runs. State must live on disk.</p>
+
+<pre><code># .github/ergane-state.md
+---
+version: 1
+last_run: 2026-07-18T04:30:00Z
+---
+
+## Detected Inventions
+| ID | Date | Commit | Novelty | Status | PR | Inventor |
+|---|---|---|---|---|---|---|
+| INV-001 | 2026-07-18 | a1b2c3d | 0.87 HIGH | pending-review | #42 | alice@ |
+| INV-002 | 2026-07-17 | b2c3d4e | 0.52 MEDIUM | abandoned | — | bob@ |
+
+## Statistics
+- Total scanned: 47 commits
+- Inventions detected: 2
+- False positives: 3 (novelty 0.4-0.5, later rejected)
+- Attorney approved: 0
+- Filed: 0
+
+## False Positive Patterns
+1. UI layout changes — flagged as "technical interface improvement"
+2. README updates — flagged as "technical documentation invention"
+3. Dependency bumps — flagged as "system optimization"
+
+## Company Domains
+- Distributed systems: cache invalidation, consensus, replication
+- ML infrastructure: training pipelines, inference optimization, model serving
+</code></pre>
+
+<h2 id="anti">10. Anti-Patterns (NEVER)</h2>
+
+<table>
+  <tr><th>Anti-Pattern</th><th>Why It Fails</th><th>Ergane Guardrail</th></tr>
+  <tr><td>"The code is good" as stop condition</td><td>Subjective, unverifiable</td><td>Stop = ergane scan exits 0 OR novelty &lt; 0.4 OR 300s timeout</td></tr>
+  <tr><td>No turn/time limit</td><td>Infinite token burn</td><td>Hard limit: 300s, 3 LLM calls, 20 patent records</td></tr>
+  <tr><td>Writer grades own work</td><td>False positives, low quality</td><td>Mandatory verifier agent with different model</td></tr>
+  <tr><td>No state file</td><td>Every run starts from zero</td><td>State written after every detection</td></tr>
+  <tr><td>Auto-merge without human review</td><td>Comprehension debt, legal risk</td><td>NEVER auto-merge. PR comment only.</td></tr>
+  <tr><td>Cognitive surrender</td><td>Stop having opinions</td><td>RULES.md: "I flag POTENTIAL only. Human finalizes."</td></tr>
+</table>
+
+<h2 id="install">11. Installation Commands</h2>
+
+<h3>11.1 Loop Engineering Tooling</h3>
+<pre><code># Ouro Loop (verification gates)
+pip install ouro-loop
+ouro-sentinel init .
+ouro-sentinel install .
+
+# AWS AI-DLC v2 (workflow steering)
+wget https://github.com/awslabs/aidlc-workflows/releases/download/v1.0.1/ai-dlc-rules-v1.0.1.zip
+unzip ai-dlc-rules-v1.0.1.zip -d .aidlc/
+
+# Loop engineering skill examples
+git clone https://github.com/iamarvindh/claude-loop-engineering
+# Reference: examples/goal-to-green/, examples/morning-triage/
+
+# Awesome loop engineering (teaching repo)
+git clone https://github.com/invincible04/awesome-loop-engineering
+</code></pre>
+
+<h3>11.2 Codex Subagent Setup</h3>
+<pre><code>mkdir -p .codex/agents skills/ergane-detect skills/ergane-prior-art skills/ergane-synthesize
+
+# Copy agent configs from this AGENTS.html document
+# Copy skill configs from SKILL.md templates above
+
+# Start Codex with agentic mode
+codex exec --approval-mode full-auto "Build Ergane per the ARCHITECTURE.html and AGENTS.html specs"
+</code></pre>
+
+<h3>11.3 OpenClaw Agentic Notification</h3>
+<pre><code># Add to ~/.openclaw/openclaw.json
+{
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    path: "/hooks",
+    allowedAgentIds: ["ergane"],
+    mappss: [{
+      id: "ergane_invention",
+      match: { path: "ergane" },
+      action: "agent",
+      name: "Ergane",
+      messageTemplate: "Invention detected: {{payload.invention_title}}. Novelty: {{payload.novelty_score}}. Should I schedule attorney review?",
+      deliver: true,
+      channel: "slack",
+      to: "#inventions",
+      model: "openai/gpt-5.6-luna",
+      thinking: "medium"
+    }]
+  }
+}
+</code></pre>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center;">
+AGENTS.html v1.0 | Ergane Loop Engineering Architecture | Based on Addy Osmani, Steinberger, Cherny, AWS AI-DLC v2, Ouro Loop
+</p>
+
+</div>
+</body>
+</html>

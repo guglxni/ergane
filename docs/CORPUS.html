@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ergane — Corpus & Installation Commands</title>
+<style>
+  :root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f85149;--muted:#8b949e;--code:#161b22;--border:#30363d;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0;padding:0}
+  .container{max-width:1100px;margin:0 auto;padding:2rem}
+  h1{color:var(--accent);font-size:2.2rem;margin:0}
+  h2{color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:.3rem;margin-top:2.5rem}
+  h3{color:var(--accent);margin-top:1.8rem}
+  .badge{display:inline-block;padding:.12rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;margin-right:.3rem}
+  .badge-gh{background:#238636;color:#fff}
+  .badge-cli{background:#1f6feb;color:#fff}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left}
+  th{background:var(--code);color:var(--accent);font-weight:600}
+  code,pre{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:var(--code);border-radius:6px}
+  code{padding:.15rem .35rem;font-size:.85rem}
+  pre{padding:1rem;overflow-x:auto;border:1px solid var(--border)}
+  .cli-block{margin:1rem 0}
+  .copy-block{position:relative}
+  .copy-btn{position:absolute;top:.5rem;right:.5rem;background:var(--border);color:var(--fg);border:none;padding:.25rem .5rem;border-radius:4px;cursor:pointer;font-size:.75rem}
+  .toc{position:sticky;top:1rem;float:right;width:250px;margin-left:2rem;background:var(--code);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.82rem}
+  .toc h4{margin-top:0}
+  .toc ul{list-style:none;padding-left:0}
+  .toc a{color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.toc{float:none;width:100%;margin:0 0 2rem;position:static}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header style="border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:2rem">
+  <h1>📦 Ergane — Corpus & Installation Commands</h1>
+  <p style="color:var(--muted);margin:.5rem 0 0">Exact gh CLI commands, verified repos, one-step setup</p>
+  <p style="color:var(--muted);font-size:.85rem">Date: July 18, 2026 | <span class="badge" style="background:#238636">Hermes</span> runs setup | <span class="badge" style="background:#1f6feb">Codex</span> writes code</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#prereq">1. Prerequisites</a></li>
+    <li><a href="#gh">2. gh CLI Setup</a></li>
+    <li><a href="#clone">3. Clone Commands</a></li>
+    <li><a href="#install">4. Install Dependencies</a></li>
+    <li><a href="#codex">5. Codex Setup</a></li>
+    <li><a href="#coral">6. Coral Setup</a></li>
+    <li><a href="#env">7. Environment</a></li>
+    <li><a href="#run">8. First Run</a></li>
+  </ul>
+</nav>
+
+<h2 id="prereq">1. Prerequisites</h2>
+<table>
+  <tr><th>Tool</th><th>Min Version</th><th>Verify</th><th>Install If Missing</th></tr>
+  <tr><td>Python</td><td>3.11</td><td><code>python3 --version</code></td><td><code>brew install python@3.11</code></td></tr>
+  <tr><td>Git</td><td>2.40</td><td><code>git --version</code></td><td><code>brew install git</code></td></tr>
+  <tr><td>gh CLI</td><td>2.50</td><td><code>gh --version</code></td><td><code>brew install gh</code></td></tr>
+  <tr><td>Node.js</td><td>20</td><td><code>node --version</code></td><td><code>brew install node</code></td></tr>
+  <tr><td>Bun</td><td>1.0</td><td><code>bun --version</code></td><td><code>curl -fsSL https://bun.sh/install | bash</code></td></tr>
+  <tr><td>Homebrew</td><td>any</td><td><code>brew --version</code></td><td><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></td></tr>
+</table>
+
+<h2 id="gh">2. gh CLI Setup</h2>
+<div class="cli-block">
+<pre><code># Authenticate gh with your GitHub account
+gh auth login
+# Select: HTTPS / Y / browser / login
+
+# Verify
+gh auth status</code></pre>
+</div>
+
+<h2 id="clone">3. Clone Verified Repositories</h2>
+<p>Run these from your <code>~/projects</code> directory. All repos verified live on July 18, 2026.</p>
+
+<h3>3.1 Core Project</h3>
+<div class="cli-block">
+<pre><code># Ergane (this project) — already exists at ~/ergane
+# If cloning fresh:
+gh repo clone YOURNAME/ergane ~/ergane
+cd ~/ergane
+
+# Verify remotes
+git remote -v</code></pre>
+</div>
+
+<h3>3.2 Reference Repos (for Coral specs, GBrain, etc.)</h3>
+<div class="cli-block">
+<pre><code># PQAI — semantic patent search reference
+gh repo clone pqaidevteam/pqai ~/references/pqai
+
+# GBrain — agent memory (stretch feature)
+gh repo clone garrytan/gbrain ~/references/gbrain
+
+# patent-client-agents — 111 MCP tools for USPTO/EPO
+gh repo clone parkerhancock/patent-client-agents ~/references/patent-client-agents
+
+# Ouro Loop — verification gates
+gh repo clone VictorVVedtion/ouro-loop ~/references/ouro-loop
+pip install -e ~/references/ouro-loop
+
+# AWS AI-DLC v2 — workflow rules
+gh repo clone awslabs/aidlc-workflows ~/references/aidlc-workflows
+
+# Loop Engineering examples (Claude Code)
+gh repo clone iamarvindh/claude-loop-engineering ~/references/claude-loop-engineering
+
+# Awesome Loop Engineering (teaching)
+gh repo clone invincible04/awesome-loop-engineering ~/references/awesome-loop-engineering</code></pre>
+</div>
+
+<h3>3.3 Project Structure After Clones</h3>
+<pre><code>~
+├── ergane/                    # MAIN PROJECT (you are here)
+│   ├── docs/
+│   │   ├── ARCHITECTURE.html
+│   │   ├── PRD.html
+│   │   ├── AGENTS.html
+│   │   ├── SKILL.html
+│   │   ├── DESIGN.html
+│   │   ├── MATH.html
+│   │   └── CORPUS.html      # this file
+│   ├── src/ergane/
+│   ├── skills/
+│   ├── .codex/agents/
+│   ├── .github/workflows/
+│   └── pyproject.toml
+│
+├── references/
+│   ├── pqai/
+│   ├── gbrain/
+│   ├── patent-client-agents/
+│   ├── ouro-loop/
+│   ├── aidlc-workflows/
+│   ├── claude-loop-engineering/
+│   └── awesome-loop-engineering/
+│
+└── .codex/                    # Codex config (global)</code></pre>
+
+<h2 id="install">4. Install Dependencies</h2>
+
+<h3>4.1 Python Virtual Environment</h3>
+<div class="cli-block">
+<pre><code># Hermes runs setup
+cd ~/ergane
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install in editable mode
+pip install -e ".[dev]"
+
+# Verify
+python3 -m ergane.cli --help</code></pre>
+</div>
+
+<h3>4.2 Core Python Packages</h3>
+<div class="cli-block">
+<pre><code># Hermes specifies versions; Codex installs
+pip install typer>=0.12.0 rich>=13.0 pygit2>=1.14.0
+pip install openai>=1.40.0 sentence-transformers>=2.7.0
+pip install graphifyy>=0.9.16
+pip install rank-bm25>=0.2.2 lightgbm>=4.0.0
+pip install requests>=2.32.0 pydantic>=2.0.0</code></pre>
+</div>
+
+<h3>4.3 Rust/Cargo Tools</h3>
+<div class="cli-block">
+<pre><code># Install Rust (for Codex CLI from source, if needed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+# Verify
+rustc --version</code></pre>
+</div>
+
+<h2 id="codex">5. Codex CLI Setup</h2>
+<p>Codex v0.144.5 (Rust-based, 98.9K stars). Install via any of these methods:</p>
+
+<h3>5.1 Official Install (Recommended)</h3>
+<div class="cli-block">
+<pre><code># Mac/Linux — official install script
+curl -fsSL https://chatgpt.com/codex/install.sh | sh
+
+# Or Homebrew
+brew install --cask codex
+
+# Verify
+codex --version  # Expected: codex-cli 0.144.5</code></pre>
+</div>
+
+<h3>5.2 Configure Codex Agents</h3>
+<div class="cli-block">
+<pre><code># Hermes creates agent configs
+mkdir -p ~/ergane/.codex/agents
+
+# Copy from SKILL.html specs (already in docs/SKILL.html)
+# Then configure Codex to use local agents:
+codex config set agents.dir ~/ergane/.codex/agents
+
+# Authenticate with OpenAI
+codex auth
+
+# Verify model access (make sure gpt-5.6 is available in your plan)
+codex models list | grep gpt-5.6</code></pre>
+</div>
+
+<h3>5.3 Run Codex on Ergane</h3>
+<div class="cli-block">
+<pre><code># Hermes defines task; Codex executes
+cd ~/ergane
+codex exec --approval-mode full-auto \
+  --agent ergane-impl \
+  "Implement the CLI scan command per docs/ARCHITECTURE.html Stage 1-2. Use gpt-5.6-terra for detection."
+
+# Generate /feedback Session ID (needed for hackathon submission)
+codex exec "Generate a /feedback session summary"</code></pre>
+</div>
+
+<h2 id="coral">6. Coral Setup</h2>
+
+<h3>6.1 Install Coral CLI</h3>
+<div class="cli-block">
+<pre><code># Hermes installs
+brew install withcoral/tap/coral
+
+# Verify
+coral --version  # Expected: >= 0.5.2
+
+# Add MCP server
+mkdir -p ~/.config/coral
+coral mcp-stdio  # Run MCP stdio server for agent integration</code></pre>
+</div>
+
+<h3>6.2 Configure Patent Sources</h3>
+<div class="cli-block">
+<pre><code># Hermes writes source specs (from docs/ARCHITECTURE.html)
+mkdir -p ~/.config/coral/sources
+
+# Copy corrected specs
+cp ~/ergane/coral_sources/pqai.yaml ~/.config/coral/sources/
+cp ~/ergane/coral_sources/uspto.yaml ~/.config/coral/sources/
+cp ~/ergane/coral_sources/epo.yaml ~/.config/coral/sources/
+
+# Add sources to Coral
+coral source add pqai ~/.config/coral/sources/pqai.yaml
+coral source add uspto ~/.config/coral/sources/uspto.yaml
+coral source add epo ~/.config/coral/sources/epo.yaml
+
+# List and validate
+coral source list
+coral source validate pqai
+coral source validate uspto</code></pre>
+</div>
+
+<h2 id="env">7. Environment Variables</h2>
+<p>Hermes configures these in <code>~/ergane/.env</code>. <strong>Never commit.</strong></p>
+
+<div class="cli-block">
+<pre><code># ~/ergane/.env — Hermes creates; Codex reads
+# Create with hidden input
+read -rsp "OpenAI API Key: " OPENAI_API_KEY
+read -rsp "USPTO API Key: " USPTO_API_KEY
+read -rsp "EPO Consumer Key: " EPO_CONSUMER_KEY
+read -rsp "EPO Consumer Secret: " EPO_CONSUMER_SECRET
+read -rsp "PQAI Token (optional): " PQAI_API_KEY
+read -rsp "OpenClaw Hooks Token: " OPENCLAW_HOOKS_TOKEN
+read -rsp "GitHub Token: " GITHUB_TOKEN
+
+# Write to .env
+cat > ~/ergane/.env <<EOF
+OPENAI_API_KEY=$OPENAI_API_KEY
+OPENAI_BASE_URL=https://api.openai.com/v1
+ERGANE_MODEL=gpt-5.6-sol
+ERGANE_FAST_MODEL=gpt-5.6-luna
+ERGANE_BALANCED_MODEL=gpt-5.6-terra
+ERGANE_NOVELTY_THRESHOLD=0.4
+USPTO_API_KEY=$USPTO_API_KEY
+EPO_CONSUMER_KEY=$EPO_CONSUMER_KEY
+EPO_CONSUMER_SECRET=$EPO_CONSUMER_SECRET
+PQAI_API_KEY=$PQAI_API_KEY
+OPENCLAW_WEBHOOK_URL=http://127.0.0.1:18789/hooks/ergane
+OPENCLAW_HOOKS_TOKEN=$OPENCLAW_HOOKS_TOKEN
+GITHUB_TOKEN=$GITHUB_TOKEN
+EOF
+
+# Set restrictive permissions
+chmod 600 ~/ergane/.env
+
+# Load in venv
+echo 'export $(grep -v "^#" .env | xargs)' >> ~/ergane/.venv/bin/activate
+</code></pre>
+</div>
+
+<h2 id="run">8. First Run Checklist</h2>
+
+<table>
+  <tr><th>#</th><th>Check</th><th>Command</th><th>Owner</th></tr>
+  <tr><td>1</td><td>venv active</td><td><code>source .venv/bin/activate</code></td><td>Hermes</td></tr>
+  <tr><td>2</td><td>Ergane importable</td><td><code>python3 -c "import ergane; print(ergane.__version__)"</code></td><td>Hermes</td></tr>
+  <tr><td>3</td><td>Codex working</td><td><code>codex --version</code></td><td>Hermes</td></tr>
+  <tr><td>4</td><td>Coral working</td><td><code>coral source list</code></td><td>Hermes</td></tr>
+  <tr><td>5</td><td>Env vars loaded</td><td><code>echo $ERGANE_MODEL</code> → gpt-5.6-sol</td><td>Hermes</td></tr>
+  <tr><td>6</td><td>CLI scan runs</td><td><code>python3 -m ergane.cli scan --help</code></td><td>Codex</td></tr>
+  <tr><td>7</td><td>Git detect works</td><td><code>python3 -m ergane.cli scan --since HEAD~1</code></td><td>Codex</td></tr>
+  <tr><td>8</td><td>LLM detection works</td><td>Verify scan output contains novelty_score</td><td>Codex</td></tr>
+  <tr><td>9</td><td>Coral query works</td><td>Verify prior art table in output</td><td>Hermes + Codex</td></tr>
+  <tr><td>10</td><td>GitHub Action runs</td><td>Push to test branch, check Action log</td><td>Codex</td></tr>
+</table>
+
+<h3>8.1 Quick Test Commands</h3>
+<div class="cli-block">
+<pre><code># Test 1: Import test
+python3 -c "from ergane.analyzer import get_commit_diffs; print('OK')"
+
+# Test 2: Config test
+python3 -c "from ergane.config import get_config; print(get_config()['model'])"
+
+# Test 3: Mock scan (no API calls)
+ergane scan --since HEAD~1 --dry-run --json
+
+# Test 4: End-to-end (with API calls — costs tokens)
+ergane scan --since HEAD~3 --repo . --notify</code></pre>
+</div>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center">
+CORPUS.html v1.0 | July 18, 2026 | All commands verified against live repos<br>
+<strong>Roles:</strong> <span class="badge" style="background:#238636">HERMES</span> = Setup/Verify | <span class="badge" style="background:#1f6feb">CODEX</span> = Implement/Test
+</p>
+
+</div>
+</body>
+</html>

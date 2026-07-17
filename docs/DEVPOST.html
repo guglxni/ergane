@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ergane — Devpost Submission Guide & Build Checklist</title>
+<style>
+  :root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f85149;--muted:#8b949e;--code:#161b22;--border:#30363d;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0;padding:0}
+  .container{max-width:1200px;margin:0 auto;padding:2rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:2rem}
+  h1{color:var(--accent);font-size:2.2rem;margin:0}
+  h2{color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:.3rem;margin-top:2.5rem}
+  h3{color:var(--accent);margin-top:1.8rem}
+  h4{color:#79c0ff}
+  .badge{display:inline-block;padding:.12rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600;margin-right:.3rem}
+  .badge-track{background:#238636;color:#fff}
+  .badge-prize{background:#1f6feb;color:#fff}
+  .badge-deadline{background:var(--warn);color:#fff}
+  .badge-done{background:#238636;color:#fff}
+  .badge-pending{background:#8957e5;color:#fff}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.88rem}
+  th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left}
+  th{background:var(--code);color:var(--accent);font-weight:600}
+  tr:nth-child(even){background:rgba(255,255,255,.02)}
+  code,pre{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:var(--code);border-radius:6px}
+  code{padding:.12rem .3rem;font-size:.82rem}
+  pre{padding:1rem;overflow-x:auto;border:1px solid var(--border)}
+  .deadline-block{background:rgba(248,81,73,.1);border-left:4px solid var(--warn);padding:1.2rem;margin:1rem 0;border-radius:0 8px 8px 0;font-size:1.1rem}
+  .judge-block{background:rgba(31,111,235,.08);border-left:4px solid #1f6feb;padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .checklist-item{display:flex;align-items:flex-start;gap:.75rem;padding:.6rem .8rem;background:var(--code);border:1px solid var(--border);border-radius:6px;margin:.4rem 0}
+  .check-box{width:20px;height:20px;border:2px solid var(--accent);border-radius:4px;flex-shrink:0;margin-top:2px}
+  .check-box.done{background:var(--accent)}
+  .toc{position:sticky;top:1rem;float:right;width:260px;margin-left:2rem;background:var(--code);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.8rem}
+  .toc h4{margin-top:0}
+  .toc ul{list-style:none;padding-left:0}
+  .toc a{color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.toc{float:none;width:100%;margin:0 0 2rem;position:static}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🏆 Ergane — Devpost Submission Guide</h1>
+  <p style="color:var(--muted);margin:.5rem 0 0">OpenAI Build Week 2026 | Developer Tools Track | <span class="badge badge-track">TRACK: Developer Tools</span></p>
+  <p style="color:var(--muted);font-size:.85rem">Live-verified: July 18, 2026 from devpost.com/hackathons/openai-build-week</p>
+</header>
+
+<div class="deadline-block">
+  <strong>⏰ DEADLINE:</strong> July 21, 2026 @ 5:00 PM PT / <strong>July 22, 2026 @ 5:30 AM IST</strong><br>
+  <strong>Time remaining:</strong> ~3.5 days | <strong>Prizes:</strong> $100,000 total | <strong>Participants:</strong> 33,767
+</div>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#req">1. Requirements</a></li>
+    <li><a href="#tracks">2. Tracks & Prizes</a></li>
+    <li><a href="#judges">3. Judges</a></li>
+    <li><a href="#criteria">4. Judging Criteria</a></li>
+    <li><a href="#submit">5. What to Submit</a></li>
+    <li><a href="#checklist">6. Ergane Checklist</a></li>
+    <li><a href="#codex">7. Codex /feedback ID</a></li>
+    <li><a href="#plugin">8. ChatGPT Plugin?</a></li>
+    <li><a href="#demo">9. Demo Script</a></li>
+  </ul>
+</nav>
+
+<h2 id="req">1. Hackathon Requirements (Official)</h2>
+
+<h3>1.1 What to Build</h3>
+<p>Create a project using <strong>Codex with GPT-5.6</strong>. Must fit into one of these tracks:</p>
+<table>
+  <tr><th>Track</th><th>Description</th><th>Ergane Fit</th></tr>
+  <tr><td><span class="badge badge-track">Apps for your life</span></td><td>Consumer apps for everyday life — productivity, creativity, home, family, travel, health, personal finance</td><td>❌ Not consumer-facing</td></tr>
+  <tr><td><span class="badge badge-track">Work and productivity</span></td><td>Tools that make teams faster or more effective — workflow automation, customer support, analytics, sales, back-office</td><td>✅ Partial — teams use it</td></tr>
+  <tr><td><span class="badge badge-track">Developer Tools</span></td><td>Tools for developers: testing, DevOps, agentic workflows, security</td><td>✅ <strong>PRIMARY</strong> — CLI + GitHub Action + Codex subagents</td></tr>
+  <tr><td><span class="badge badge-track">Education</span></td><td>Projects that push AI for education — students, teachers, orgs</td><td>❌ Not educational</td></tr>
+</table>
+
+<h3>1.2 Required Elements</h3>
+<ol>
+  <li><strong>Working project</strong> — built with Codex using GPT-5.6</li>
+  <li><strong>Category</strong> — pick the track that fits best (Developer Tools)</li>
+  <li><strong>Project description</strong> — what you created and how it works</li>
+  <li><strong>Demo video</strong> — <strong>&lt;3 minutes public YouTube video</strong> showing project working
+    <ul>
+      <li>Audio must cover how you used Codex AND GPT-5.6</li>
+      <li>Must show the tool in action</li>
+    </ul>
+  </li>
+  <li><strong>Code repository URL</strong> — public or private shared with testing@devpost.com + build-week-event@openai.com</li>
+  <li><strong>README</strong> with setup instructions, sample data, clear guidance for running</li>
+  <li><strong>/feedback Codex Session ID</strong> — where majority of core functionality was built</li>
+  <li><strong>Highlight Codex acceleration</strong> — where key decisions were made, how GPT-5.6 and Codex were used</li>
+</ol>
+
+<div class="judge-block">
+  <strong>Judges will evaluate:</strong> Technical Implementation (Codex usage depth), Design (runnable product), Potential Impact (real problem, real audience), Quality of Idea (creativity, novelty).<br><br>
+  <strong>Peter Steinberger</strong> ("Clawfather", Member of Technical Staff at OpenAI) is on the panel. He'll recognize genuine agentic workflows vs surface-level API wrapping.
+</div>
+
+<h2 id="tracks">2. Developer Tools Track Prizes</h2>
+
+<table>
+  <tr><th>Place</th><th>Cash</th><th>Bonuses</th></tr>
+  <tr><td><span class="badge badge-prize">1st Place</span></td><td>$15,000</td><td>Dev Day passes (2), OpenAI promotion, Codex team meet, Pro account 1yr</td></tr>
+  <tr><td><span class="badge badge-prize">2nd Place</span></td><td>$10,000</td><td>OpenAI promotion, Pro account 1yr</td></tr>
+</table>
+
+<h2 id="judges">3. Judges</h2>
+<table>
+  <tr><th>Judge</th><th>Role</th><th>Relevance to Ergane</th></tr>
+  <tr><td>Peter Steinberger</td><td>Member of Technical Staff, "Clawfather"</td><td>🎯 <strong>HIGH</strong> — Expert in CLI tooling, will evaluate agentic depth</td></tr>
+  <tr><td>Thibault Sottiaux</td><td>Head of Product & Platform</td><td>Medium — Platform fit, developer experience</td></tr>
+  <tr><td>Kath Korevec</td><td>Member of Product Staff</td><td>Medium — Product-market fit, use case clarity</td></tr>
+  <tr><td>Tara Seshan</td><td>Member of Product Staff</td><td>Medium — Technical implementation quality</td></tr>
+  <tr><td>Leah Belsky</td><td>VP of Education</td><td>Low — Not education track</td></tr>
+</table>
+
+<h2 id="criteria">4. Judging Criteria — How Ergane Scores</h2>
+
+<table>
+  <tr><th>Criterion</th><th>Weight</th><th>Ergane Strength</th><th>Evidence to Show</th></tr>
+  <tr><td><strong>Technological Implementation</strong></td><td>High</td><td>Strong — Codex CLI subagents, GPT-5.6 multi-model routing, PTC, worktrees, skills</td><td>
+    <ul>
+      <li>Screen recording of <code>codex exec -m gpt-5.6-*</code> for each stage</li>
+      <li>Show <code>.codex/agents/</code> TOML configs</li>
+      <li>Show <code>.agents/skills/</code> SKILL.md files</li>
+      <li>Show Coral SQL queries being generated</li>
+      <li>Highlight PTC for parallel patent search</li>
+    </ul>
+  </td></tr>
+  <tr><td><strong>Design</strong></td><td>Medium</td><td>Strong — Rich CLI output with tables, JSON, PR comments, webhook notifications</td><td>
+    <ul>
+      <li>Rich Terminal UI showing novelty scores</li>
+      <li>GitHub PR comment with formatted results</li>
+      <li>Slack/Discord webhook payload preview</li>
+    </ul>
+  </td></tr>
+  <tr><td><strong>Potential Impact</strong></td><td>Medium</td><td>Strong — Real problem (patent loss costs $100K+), real audience (engineers, CTOs, patent attorneys)</td><td>
+    <ul>
+      <li>Cite Alice Corp, USPTO AI co-inventor guidance</li>
+      <li>Show cost comparison: $5K attorney search vs free Ergane scan</li>
+    </ul>
+  </td></tr>
+  <tr><td><strong>Quality of Idea</strong></td><td>Medium</td><td>Strong — Novel intersection of code analysis + patent law + agentic workflows</td><td>
+    <ul>
+      <li>No existing tool does "git push → patent audit"</li>
+      <li>Loop engineering + Ouro Loop gates are unique</li>
+    </ul>
+  </td></tr>
+</table>
+
+<h2 id="submit">5. Submission Checklist</h2>
+
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Devpost project page</strong> created with title, description, category</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>GitHub repo</strong> public or shared with testing@devpost.com + build-week-event@openai.com</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>README.md</strong> with setup instructions, sample data, running guidance</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Demo video</strong> (YouTube, <3 min, public, audio explains Codex + GPT-5.6 usage)</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>/feedback Session ID</strong> from Codex where core functionality was built</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Installation instructions</strong> for plugin/tool (pip install, GitHub Action setup)</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Supported platforms</strong> (macOS, Linux, Windows via WSL)</div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Demo instance / sandbox</strong> or test account for judges (optional but recommended)</div>
+</div>
+
+<h2 id="checklist">6. Ergane Build Checklist (Hermes → Codex)</h2>
+
+<h3>Phase 1: Hermes (Architect/PM) — NOW</h3>
+<table>
+  <tr><th>Task</th><th>Status</th><th>Details</th></tr>
+  <tr><td>Define project structure</td><td><span class="badge badge-done">DONE</span></td><td>docs/ with 8 HTML specs</td></tr>
+  <tr><td>Write pyproject.toml</td><td><span class="badge badge-pending">TODO</span></td><td>Typer, Rich, OpenAI, pygit2 dependencies</td></tr>
+  <tr><td>Design config system</td><td><span class="badge badge-pending">TODO</span></td><td>Env vars + .ergane.toml per repo</td></tr>
+  <tr><td>Write test fixtures</td><td><span class="badge badge-pending">TODO</span></td><td>Sample diffs, sample patent JSON</td></tr>
+  <tr><td>Create GitHub Action YAML</td><td><span class="badge badge-pending">TODO</span></td><td>.github/workflows/ergane.yml</td></tr>
+  <tr><td>Write README with demo</td><td><span class="badge badge-pending">TODO</span></td><td>Setup, usage, video links</td></tr>
+</table>
+
+<h3>Phase 2: Codex (Developer) — INVOKE NOW</h3>
+
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 1:</strong> <code>ergane config</code> — Read env vars, load .ergane.toml, validate API keys
+    <br><code>codex exec -m gpt-5.6-terra "Implement src/ergane/config.py with pydantic settings, env var loading, .ergane.toml repo config"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 2:</strong> <code>ergane analyzer</code> — PyGit2 diff parsing, commit metadata extraction
+    <br><code>codex exec -m gpt-5.6-luna "Implement src/ergane/analyzer.py: get_commit_diffs(), extract_technical_problem(), extract_technical_solution()"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 3:</strong> <code>ergane embedder</code> — Sentence-BERT for semantic patent comparison
+    <br><code>codex exec -m gpt-5.6-luna "Implement src/ergane/embeddings.py: PatentEmbedder class with encode(), similarity() using sentence-transformers"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 4:</strong> <code>ergane scoring</code> — BM25, cosine, IPC Jaccard, ensemble novelty score
+    <br><code>codex exec -m gpt-5.6-terra "Implement src/ergane/scoring.py: NoveltyEnsemble class with sigmoid scoring, IPC similarity, temporal decay"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 5:</strong> <code>ergane patent_search</code> — USPTO, EPO, PQAI API wrappers
+    <br><code>codex exec -m gpt-5.6-terra "Implement src/ergane/patent_search.py: search_uspto(), search_epo(), search_pqai() with error handling and rate limiting"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 6:</strong> <code>ergane synthesizer</code> — LLM call to draft claim + risk assessment
+    <br><code>codex exec -m gpt-5.6-sol "Implement src/ergane/synthesizer.py: synthesize() calls OpenAI API with gpt-5.6-sol for claim drafting, returns JSON with novelty_score, risk, draft_claim"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 7:</strong> <code>ergane notifier</code> — GitHub PR comment + OpenClaw webhook POST
+    <br><code>codex exec -m gpt-5.6-luna "Implement src/ergane/notifier.py: post_pr_comment(), send_openclaw_webhook() with payload formatting and error handling"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 8:</strong> <code>ergane state</code> — Read/write .github/ergane-state.md
+    <br><code>codex exec -m gpt-5.6-luna "Implement src/ergane/state.py: read_state(), append_invention(), update_status() for markdown-based state tracking"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 9:</strong> <code>ergane cli</code> — Typer CLI with scan, analyze, config commands
+    <br><code>codex exec -m gpt-5.6-terra "Implement src/ergane/cli.py: Typer app with scan, analyze, config commands, Rich tables for output, --json flag"</code>
+  </div>
+</div>
+<div class="checklist-item">
+  <div class="check-box"></div>
+  <div><strong>Task 10:</strong> <code>tests</code> — pytest suite with fixtures
+    <br><code>codex exec -m gpt-5.6-terra "Write tests/test_scoring.py, tests/test_analyzer.py with pytest fixtures, mock LLM responses, assert sigmoid math"</code>
+  </div>
+</div>
+
+<h2 id="codex">7. /feedback Session ID (CRITICAL)</h2>
+
+<div class="deadline-block">
+  <strong>How to get your Session ID:</strong><br>
+  1. Build the core functionality inside a Codex session<br>
+  2. Type <code>/feedback</code> in the Codex TUI<br>
+  3. Copy the Session ID from the output<br>
+  4. Paste it into the Devpost submission form<br><br>
+  <strong>This is mandatory.</strong> Without it, your submission is incomplete.
+</div>
+
+<h3>Recommended Session Flow</h3>
+<pre><code># Hermes: Create a dedicated Codex session for major features
+cd ~/ergane
+codex -m gpt-5.6-terra
+
+# Inside Codex TUI:
+> Implement the CLI scan command per docs/ARCHITECTURE.html Stage 1-4
+> Use ergane-detect skill. Read src/ergane/analyzer.py and add diff parsing.
+
+# After major milestone:
+> /feedback
+# Copy Session ID, paste into Devpost</code></pre>
+
+<h2 id="plugin">8. ChatGPT Plugin / App Submission Path</h2>
+
+<h3>8.1 Devpost Plugin (Already Exists)</h3>
+<p>The hackathon mentions a <strong>"Devpost Hackathons Plugin"</strong> that runs inside ChatGPT. This is NOT something we build — it's a Devpost-owned plugin for browsing hackathons.</p>
+
+<h3>8.2 Can Ergane Be a ChatGPT Plugin / GPT App?</h3>
+<table>
+  <tr><th>Path</th><th>Feasibility</th><th>Effort</th><th>Recommendation</th></tr>
+  <tr><td><strong>ChatGPT Plugin (legacy)</strong></td><td>Deprecated by OpenAI</td><td>N/A</td><td>❌ Don't pursue</td></tr>
+  <tr><td><strong>GPTs / Custom GPT</strong></td><td>Possible but limited — no file system access, no git</td><td>Low</td><td>⚠️ Weak fit — Ergane needs CLI + git</td></tr>
+  <tr><td><strong>ChatGPT Desktop App with Worktrees</strong></td><td>Codex desktop app supports scheduled tasks + skills</td><td>Medium</td><td>✅ Good stretch — submit as "also works in Codex desktop"</td></tr>
+  <tr><td><strong>MCP Server</strong></td><td>Expose Ergane as MCP so other agents can call it</td><td>Low-Medium</td><td>✅ Good addition — makes it composable</td></tr>
+  <tr><td><strong>GitHub Action + CLI</strong></td><td>Core deliverable, fully functional</td><td>Medium</td><td>✅ PRIMARY — focus here</td></tr>
+</table>
+
+<h3>8.3 Recommended: Package as Both CLI + MCP Server</h3>
+<pre><code># Ergane as MCP server — other agents can invoke patent search
+{
+  "mcpServers": {
+    "ergane": {
+      "command": "python3",
+      "args": ["-m", "ergane.mcp"],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ERGANE_MODEL": "gpt-5.6-sol"
+      }
+    }
+  }
+}</code></pre>
+
+<p><strong>Submission framing:</strong> "Ergane is a CLI tool and GitHub Action for developer teams. It also exposes an MCP server for agent composability, making it usable from any Codex/Cursor/Claude Code session."</p>
+
+<h2 id="demo">9. Demo Video Script (&lt;3 minutes)</h2>
+
+<table>
+  <tr><th>Time</th><th>Scene</th><th>Audio</th><th>Visual</th></tr>
+  <tr><td>0:00-0:15</td><td>Hook</td><td>"Engineers invent patentable tech every day and don't know it. By the time legal reviews, the invention is public — patentability destroyed."</td><td>Terminal showing git commit. News headline about patent lawsuit.</td></tr>
+  <tr><td>0:15-0:45</td><td>Problem</td><td>"Prior art searches cost $5-15K each. Early detection is everything. But no tool connects git commits to patent analysis."</td><td>Cost comparison table. Empty patent attorney invoice.</td></tr>
+  <tr><td>0:45-1:30</td><td>Demo: CLI scan</td><td>"Ergane runs on every git push. It extracts the technical invention, searches USPTO, EPO, and PQAI in parallel, and synthesizes a novelty score."</td><td><code>ergane scan --since HEAD~1</code> running. Rich table shows novelty_score: 0.87 HIGH.</td></tr>
+  <tr><td>1:30-2:00</td><td>Demo: Results</td><td>"It drafts a preliminary claim, identifies closest prior art, and posts everything to GitHub for attorney review."</td><td>GitHub PR comment with formatted results. OpenClaw webhook hitting Slack.</td></tr>
+  <tr><td>2:00-2:30</td><td>Codex + GPT-5.6</td><td>"We built this with Codex CLI and GPT-5.6. Luna handles diff parsing, Terra generates patent SQL, and Sol drafts the legal claims. The entire pipeline uses Loop Engineering with Ouro Loop verification gates."</td><td>Split screen: 3 codex exec commands. Subagent diagram from docs.</td></tr>
+  <tr><td>2:30-2:55</td><td>Impact</td><td>"Ergane turns every git push into an IP audit. Free for developers. Protects inventions before they're public."</td><td>Cost: $0 vs $5K. Terminal showing scan complete.</td></tr>
+  <tr><td>2:55-3:00</td><td>Close</td><td>"Ergane. Patent intelligence, agentic by design."</td><td>Logo. GitHub repo URL.</td></tr>
+</table>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center">
+DEVPOST.html v1.0 | July 18, 2026 | All requirements extracted live from devpost.com/hackathons/openai-build-week<br>
+Track: Developer Tools | Deadline: July 21, 2026 @ 5:00 PM PT
+</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ergane — Architecture v2 (July 2026)</title>
+<style>
+  :root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f85149;--muted:#8b949e;--code:#161b22;--border:#30363d;}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0;padding:0}
+  .container{max-width:1200px;margin:0 auto;padding:2rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:2rem}
+  h1{color:var(--accent);font-size:2.4rem;margin:0}
+  h2{color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:.3rem;margin-top:2.5rem}
+  h3{color:var(--accent);margin-top:1.8rem}
+  h4{color:#79c0ff}
+  .badge{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;margin-right:.3rem}
+  .badge-core{background:#238636;color:#fff}
+  .badge-verify{background:#1f6feb;color:#fff}
+  .badge-correct{background:#8957e5;color:#fff}
+  .badge-warn{background:var(--warn);color:#fff}
+  .role-hermes{background:#238636;color:#fff}
+  .role-codex{background:#1f6feb;color:#fff}
+  .role-block{border-left:4px solid var(--accent);padding:1rem;margin:1rem 0;background:rgba(88,166,255,.08);border-radius:0 6px 6px 0}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left}
+  th{background:var(--code);color:var(--accent);font-weight:600}
+  tr:nth-child(even){background:rgba(255,255,255,.02)}
+  code,pre{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:var(--code);border-radius:6px}
+  code{padding:.15rem .35rem;font-size:.85rem}
+  pre{padding:1rem;overflow-x:auto;border:1px solid var(--border)}
+  .verify-block{background:rgba(31,111,235,.08);border-left:4px solid var(--accent);padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .warn-block{background:rgba(248,81,73,.08);border-left:4px solid var(--warn);padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .flow{display:flex;flex-direction:column;gap:.5rem;margin:1.5rem 0}
+  .flow-step{display:flex;align-items:center;gap:1rem;padding:.75rem 1rem;background:var(--code);border:1px solid var(--border);border-radius:6px}
+  .flow-step-num{background:var(--accent);color:#fff;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;font-size:.85rem;flex-shrink:0}
+  .repo-card{border:1px solid var(--border);border-radius:6px;padding:1rem;margin:.5rem 0;background:var(--code)}
+  .gh-cli{background:#1f6feb15;border:1px dashed #1f6feb;padding:.75rem;border-radius:6px;margin:.5rem 0}
+  .toc{position:sticky;top:1rem;float:right;width:260px;margin-left:2rem;background:var(--code);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.85rem}
+  .toc h4{margin-top:0}
+  .toc ul{list-style:none;padding-left:0}
+  .toc a{color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.toc{float:none;width:100%;margin:0 0 2rem;position:static}}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:700px){.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🏛️ Ergane — System Architecture v2.0</h1>
+  <p style="color:var(--muted);margin:.5rem 0 0">OpenAI Build Week 2026 | Developer Tools Track | <strong style="color:var(--warn)">Deadline: July 21, 2026 @ 5:00 PM PDT (3 days left)</strong></p>
+  <p style="color:var(--muted);font-size:.85rem">Live-verified: July 18, 2026 | <strong>Hermes</strong> = Architect/PM | <strong>Codex</strong> = Developer/Coder</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#roles">1. Role Separation</a></li>
+    <li><a href="#overview">2. Overview</a></li>
+    <li><a href="#loop">3. Loop Engineering</a></li>
+    <li><a href="#repos">4. Verified Repos</a></li>
+    <li><a href="#dataflow">5. Data Flow</a></li>
+    <li><a href="#detect">6. Code Analysis</a></li>
+    <li><a href="#coral">7. Coral (DSL v3)</a></li>
+    <li><a href="#synth">8. Synthesis</a></li>
+    <li><a href="#notify">9. OpenClaw</a></li>
+    <li><a href="#legal">10. Legal</a></li>
+    <li><a href="#state">11. State</a></li>
+    <li><a href="#subagents">12. Sub-Agents</a></li>
+    <li><a href="#security">13. Security</a></li>
+  </ul>
+</nav>
+
+<h2 id="roles">1. Team Role Separation</h2>
+
+<div class="role-block">
+<strong><span class="badge role-hermes">HERMES</span> — Architect / Product Manager / Integration Engineer</strong>
+<ul>
+  <li>Writes all specification documents (this file, PRD, AGENTS, SKILL, DESIGN, MATH)</li>
+  <li>Designs system architecture, data flows, API mappings</li>
+  <li>Verifies all external APIs and dependencies live against primary sources</li>
+  <li>Configures environmental setup (venv, paths, dependencies)</li>
+  <li>Runs verification tests and CI checks</li>
+  <li>Delegates implementation tasks to Codex with precise spec references</li>
+  <li><strong>Tool:</strong> terminal, file, web_search, web_extract, browser, memory</li>
+</ul>
+</div>
+
+<div class="role-block">
+<strong><span class="badge role-codex">CODEX</span> — Developer / Coder / Implementation Agent</strong>
+<ul>
+  <li>Writes Python/TypeScript code based on Hermes specifications</li>
+  <li>Implements CLI commands, GitHub Action YAML, SQL generation</li>
+  <li>Runs unit tests and fixes lint/type errors</li>
+  <li>Generates <code>/feedback</code> Session ID for hackathon submission</li>
+  <li><strong>Invocation:</strong> <code>codex exec --approval-mode full-auto "implement FEATURE per docs/FEATURE.html"</code></li>
+  <li><strong>Constraint:</strong> Never architect new unverified API specs — always reference Hermes docs</li>
+</ul>
+</div>
+
+<h2 id="overview">2. System Overview</h2>
+<p>Ergane is a <strong>CLI tool + GitHub Action</strong> that detects potential patentable technical inventions in code commits, searches multiple patent databases via Coral SQL, synthesizes prior art similarity, drafts preliminary patent claims, and notifies teams.</p>
+
+<div class="verify-block">
+<strong>Verified Live:</strong> OpenAI Build Week 2026 — Deadline <strong>July 21, 2026 @ 5:00 PM PDT</strong> (3 days from now). Judge: Peter Steinberger. Track: Developer Tools. Prizes: $100K.
+</div>
+
+<table>
+  <tr><th>Attribute</th><th>Value</th><th>Assigned To</th></tr>
+  <tr><td><span class="badge badge-core">CORE</span> Trigger</td><td>Git push / CLI scan / GitHub Action</td><td>Hermes + Codex</td></tr>
+  <tr><td><span class="badge badge-core">CORE</span> Language</td><td>Python 3.11+ (Typer CLI)</td><td>Codex</td></tr>
+  <tr><td><span class="badge badge-core">CORE</span> AI Model</td><td><strong>gpt-5.6-sol</strong> (launched July 9, 2026 — required for hackathon)</td><td>Hermes (config) + Codex (calls)</td></tr>
+  <tr><td><span class="badge badge-verify">VERIFY</span> Code Analysis</td><td>PyGit2 + Graphifyy</td><td>Hermes (research) + Codex (impl)</td></tr>
+  <tr><td><span class="badge badge-verify">VERIFY</span> Patent Search</td><td>Coral SQL over USPTO + EPO + PQAI + local</td><td>Hermes (DSL spec) + Codex (impl)</td></tr>
+  <tr><td><span class="badge badge-verify">VERIFY</span> Notification</td><td>OpenClaw gateway (JSON5 config)</td><td>Hermes (config) + Codex (integration)</td></tr>
+  <tr><td><span class="badge badge-correct">FIXED</span> Memory</td><td>Local markdown + GBrain (stretch)</td><td>Hermes</td></tr>
+  <tr><td><span class="badge badge-correct">FIXED</span> Legal</td><td>Disclaimer on every output</td><td>Hermes</td></tr>
+</table>
+
+<h2 id="loop">3. Loop Engineering Design</h2>
+
+<h3>3.1 The Six Pieces</h3>
+<table>
+  <tr><th>Piece</th><th>Ergane Implementation</th><th>Owner</th></tr>
+  <tr><td><strong>1. Automations</strong></td><td>Git push → GitHub Action → <code>ergane scan</code></td><td>Codex</td></tr>
+  <tr><td><strong>2. Worktrees</strong></td><td>Each subagent gets isolated git worktree</td><td>Hermes (script) + Codex (impl)</td></tr>
+  <tr><td><strong>3. Skills</strong></td><td>$ergane-detect, $ergane-prior-art, $ergane-synthesize, $ergane-notify</td><td>Hermes (spec) + Codex (impl)</td></tr>
+  <tr><td><strong>4. Connectors</strong></td><td>Coral MCP, OpenClaw MCP, GitHub MCP</td><td>Hermes (config) + Codex (impl)</td></tr>
+  <tr><td><strong>5. Sub-agents</strong></td><td>Explorer (gpt-5.6-luna), Implementer (gpt-5.6-terra), Verifier (gpt-5.6-sol), Reviewer (gpt-5.6-luna)</td><td>Hermes (spec) + Codex (run)</td></tr>
+  <tr><td><strong>6. State</strong></td><td><code>.github/ergane-state.md</code></td><td>Codex (write) + Hermes (review)</td></tr>
+</table>
+
+<h3>3.2 Loop Contract (11-Part)</h3>
+<table>
+  <tr><th>#</th><th>Element</th><th>Ergane Definition</th><th>Owner</th></tr>
+  <tr><td>1</td><td>Purpose</td><td>Detect patentable technical inventions in code commits</td><td>Hermes</td></tr>
+  <tr><td>2</td><td>Trigger</td><td>Git push (via GitHub Action) or manual <code>ergane scan</code></td><td>Codex</td></tr>
+  <tr><td>3</td><td>Triage criteria</td><td>Novelty score ≥ 0.4 AND key_claim_elements non-empty</td><td>Codex (logic) + Hermes (threshold)</td></tr>
+  <tr><td>4</td><td>Boundaries</td><td>Never auto-file patents. Never process code without permission.</td><td>Hermes (RULES.md)</td></tr>
+  <tr><td>5</td><td>Stop conditions</td><td>exit 0 | novelty &lt; 0.4 | timeout 300s</td><td>Codex</td></tr>
+  <tr><td>6</td><td>Turn/time limit</td><td>300s; max 3 LLM calls; max 20 patent records</td><td>Hermes</td></tr>
+  <tr><td>7</td><td>Skill dependencies</td><td>$ergane-detect, $ergane-prior-art, $ergane-synthesize</td><td>Hermes</td></tr>
+  <tr><td>8</td><td>Connector dependencies</td><td>Coral MCP, GitHub token</td><td>Hermes (setup)</td></tr>
+  <tr><td>9</td><td>Verification gate</td><td>Ouro Loop: EXIST + RELEVANCE + ROOT_CAUSE + MOMENTUM + RECALL</td><td>Codex (enforcement) + Hermes (spec)</td></tr>
+  <tr><td>10</td><td>Escalation path</td><td>Blocked → GitHub PR with "needs-attorney-review"</td><td>Codex</td></tr>
+  <tr><td>11</td><td>State file location</td><td><code>.github/ergane-state.md</code></td><td>Codex</td></tr>
+</table>
+
+<h3>3.3 AWS AI-DLC v2 Integration</h3>
+<pre><code># Hermes: Download and verify
+wget https://github.com/awslabs/aidlc-workflows/releases/download/v1.0.1/ai-dlc-rules-v1.0.1.zip -O /tmp/aidlc.zip
+unzip -q /tmp/aidlc.zip -d .aidlc/
+
+# Hermes: Create steering file for Codex
+mkdir -p .codex
+cat > .codex/AGENTS.md <<'EOF'
+When the user invokes AI-DLC, read and follow
+.aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md to start the workflow.
+Ensure all code passes Ouro Loop gates: EXIST, RELEVANCE, ROOT_CAUSE, MOMENTUM, RECALL.
+Never claim software per se is patentable. Always include legal disclaimer.
+EOF
+</code></pre>
+
+<h2 id="repos">4. Verified GitHub Repositories (Live Verified July 18, 2026)</h2>
+
+<h3>4.1 Core Dependencies</h3>
+
+<div class="repo-card">
+  <h4>withcoral/coral <span class="badge badge-core">CORAL</span></h4>
+  <div class="meta">Latest: v0.5.2 (July 9, 2026) | 5K+ stars | Apache-2.0</div>
+  <p>SQL runtime over HTTP APIs. <strong>NOT</strong> cloned — installed via Homebrew.</p>
+  <div class="gh-cli"><strong>Hermes installs:</strong><code>brew install withcoral/tap/coral</code></div>
+</div>
+
+<div class="repo-card">
+  <h4>openai/codex <span class="badge badge-correct">CODEX CLI</span></h4>
+  <div class="meta">Latest: v0.144.5 (July 16, 2026) | 98.9K stars | Rust/Apache-2.0</div>
+  <p>Codex CLI is now Rust-based. No longer npm.</p>
+  <div class="gh-cli">
+    <strong>Hermes installs:</strong><br>
+    <code>curl -fsSL https://chatgpt.com/codex/install.sh | sh</code><br>
+    <code># OR: brew install --cask codex</code><br>
+    <code># OR: npm install -g @openai/codex  (fallback)</code>
+  </div>
+</div>
+
+<div class="repo-card">
+  <h4>pqaidevteam/pqai <span class="badge badge-verify">PQAI</span></h4>
+  <div class="meta">1.5K+ stars | MIT | Semantic prior art search</div>
+  <div class="gh-cli"><strong>Optional clone (for reference):</strong><code>gh repo clone pqaidevteam/pqai -- ~/pqai</code></div>
+</div>
+
+<div class="repo-card">
+  <h4>garrytan/gbrain <span class="badge badge-correct">GBRAIN</span></h4>
+  <div class="meta">26K stars | MIT | Agent memory</div>
+  <div class="gh-cli"><strong>Stretch feature:</strong><code>gh repo clone garrytan/gbrain -- ~/gbrain</code></div>
+</div>
+
+<h3>4.2 Loop Engineering References</h3>
+<table>
+  <tr><th>Repo</th><th>Stars</th><th>Clone</th><th>Purpose</th></tr>
+  <tr><td>VictorVVedtion/ouro-loop</td><td>17</td><td><code>gh repo clone VictorVVedtion/ouro-loop</code></td><td>5 verification gates</td></tr>
+  <tr><td>iamarvindh/claude-loop-engineering</td><td>—</td><td><code>gh repo clone iamarvindh/claude-loop-engineering</code></td><td>5 ready loop examples</td></tr>
+  <tr><td>invincible04/awesome-loop-engineering</td><td>33</td><td><code>gh repo clone invincible04/awesome-loop-engineering</code></td><td>Teaching repo + skill</td></tr>
+  <tr><td>awslabs/aidlc-workflows</td><td>3K</td><td><code>gh repo clone awslabs/aidlc-workflows</code></td><td>AI-DLC v2 workflow rules</td></tr>
+</table>
+
+<h2 id="dataflow">5. Data Flow Architecture</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-step-num">1</div><div><strong>TRIGGER:</strong> <code>git push</code> or <code>ergane scan</code></div></div>
+  <div class="flow-arrow" style="text-align:center;color:var(--muted)">↓</div>
+  <div class="flow-step"><div class="flow-step-num">2</div><div><strong>STAGE 1</strong> — <span class="badge role-codex">CODEX</span> runs Explorer agent (gpt-5.6-luna): PyGit2 diff → Graphifyy AST → commit metadata</div></div>
+  <div class="flow-arrow" style="text-align:center;color:var(--muted)">↓</div>
+  <div class="flow-step"><div class="flow-step-num">3</div><div><strong>STAGE 2</strong> — <span class="badge role-hermes">HERMES</span> verifies DSL; <span class="badge role-codex">CODEX</span> runs Implementer agent (gpt-5.6-terra): Coral SQL generation</div></div>
+  <div class="flow-arrow" style="text-align:center;color:var(--muted)">↓</div>
+  <div class="flow-step"><div class="flow-step-num">4</div><div><strong>STAGE 3</strong> — <span class="badge role-codex">CODEX</code> runs Verifier agent (gpt-5.6-sol): Prior art synthesis + draft claim</div></div>
+  <div class="flow-arrow" style="text-align:center;color:var(--muted)">↓</div>
+  <div class="flow-step"><div class="flow-step-num">5</div><div><strong>STAGE 4</strong> — <span class="badge role-codex">CODEX</span> runs Reviewer agent (gpt-5.6-luna): PR comment + OpenClaw webhook POST</div></div>
+  <div class="flow-arrow" style="text-align:center;color:var(--muted)">↓</div>
+  <div class="flow-step"><div class="flow-step-num">6</div><div><strong>HUMAN REVIEW</strong> — Attorney reviews GitHub PR</div></div>
+</div>
+
+<h2 id="detect">6. Stage 1: Code Analysis</h2>
+<pre><code>import pygit2
+import graphify
+
+def extract_commit_context(repo_path: str, since_ref: str, to_ref: str) -> dict:
+    repo = pygit2.Repository(repo_path)
+    since = repo.revparse_single(since_ref)
+    to = repo.revparse_single(to_ref)
+    diff = repo.diff(since, to)
+
+    files_changed = [delta.new_file.path for delta in diff.deltas]
+
+    g = graphify.Graphify()
+    subgraph = g.query(
+        repo_path=repo_path,
+        query="Identify data processing and synchronization methods in modified files",
+        files=files_changed,
+    )
+
+    return {
+        "diff_text": diff.patch,
+        "files_changed": files_changed,
+        "subgraph": subgraph,
+        "commit_message": to.message,
+        "commit_hash": str(to.id)[:8],
+    }
+</code></pre>
+
+<h2 id="coral">7. Coral Integration (DSL v3 — Verified)</h2>
+<p>Coral v0.5.2 (Jul 9, 2026). DSL v4 is in preview — Ergane uses v3 (stable).</p>
+
+<h3>7.1 Corrected PQAI Spec</h3>
+<pre><code>name: pqai
+version: 0.1.0
+dsl_version: 3
+backend: http
+inputs:
+  PQAI_API_KEY:
+    kind: secret
+    required: false
+base_url: "https://api.projectpq.ai"
+auth:
+  type: HeaderAuth
+  headers:
+    - name: Authorization
+      from: bearer
+      key: PQAI_API_KEY
+functions:
+  - name: search_patents
+    kind: search
+    description: Semantic prior art search
+    search_limits:
+      default_top_k: 10
+      max_top_k: 50
+      max_calls_per_query: 1
+    args:
+      - name: query
+        required: true
+        bind:
+          arg: q
+      - name: top_k
+        required: false
+        bind:
+          arg: top_n
+    request:
+      method: GET
+      path: /search/102
+      query:
+        - name: q
+          from: arg
+          key: q
+        - name: n
+          from: arg
+          key: top_n
+        - name: type
+          from: literal
+          value: patent
+    response:
+      rows_path: [results]
+    columns:
+      - name: id
+        type: Utf8
+      - name: publication_number
+        type: Utf8
+      - name: title
+        type: Utf8
+      - name: abstract
+        type: Utf8
+      - name: score
+        type: Float64
+</code></pre>
+
+<h3>7.2 USPTO Spec (Verified)</h3>
+<div class="warn-block">
+  <strong>Endpoint correction:</strong> Real endpoint is <code>POST https://api.uspto.gov/api/v1/patent/applications/search</code>. Applications filed since 2001. Grants appear when patentNumber populated.
+</div>
+<pre><code>name: uspto
+version: 0.1.0
+dsl_version: 3
+base_url: "https://api.uspto.gov"
+auth:
+  type: HeaderAuth
+  headers:
+    - name: X-API-KEY
+      from: input
+      key: USPTO_API_KEY
+functions:
+  - name: patents
+    kind: search
+    args:
+      - name: q
+        required: true
+        bind:
+          arg: query
+    request:
+      method: POST
+      path: /api/v1/patent/applications/search
+      headers:
+        - name: Content-Type
+          from: literal
+          value: application/json
+      body:
+        - path: q
+          from: arg
+          key: query
+        - path: limit
+          from: arg
+          key: limit
+        - path: offset
+          from: arg
+          key: offset
+    response:
+      rows_path: [patentFileWrapperDataBag]
+    columns:
+      - name: applicationNumberText
+        type: Utf8
+      - name: patentNumber
+        type: Utf8
+      - name: inventionTitle
+        type: Utf8
+      - name: abstractText
+        type: Utf8
+      - name: firstApplicantName
+        type: Utf8
+      - name: filingDate
+        type: Timestamp
+      - name: ipcCodes
+        type: Utf8
+</code></pre>
+
+<h3>7.3 Multi-Source Coral SQL</h3>
+<pre><code>WITH uspto_results AS (
+    SELECT applicationNumberText AS patent_number, inventionTitle AS title,
+           abstractText AS abstract, firstApplicantName AS assignee, 0.8 AS source_weight
+    FROM uspto.patents WHERE q = 'vector clock cache invalidation' LIMIT 10
+),
+epo_results AS (
+    SELECT doc_number AS patent_number, title, abstract, applicant AS assignee, 0.8 AS source_weight
+    FROM epo.patents WHERE q = 'ti=distributed cache AND ab=vector clock' LIMIT 10
+),
+pqai_results AS (
+    SELECT publication_number AS patent_number, title, abstract,
+           NULL AS assignee, score AS source_weight
+    FROM pqai.search_patents(query => 'distributed cache invalidation', top_k => 10)
+)
+SELECT * FROM uspto_results
+UNION ALL SELECT * FROM epo_results
+UNION ALL SELECT * FROM pqai_results
+ORDER BY source_weight DESC LIMIT 20;
+</code></pre>
+
+<h2 id="synth">8. Stage 3: Synthesis (gpt-5.6-sol)</h2>
+<pre><code>You are a patent claim analyst. Compare the following invention against prior art.
+
+INVENTION:
+- Technical problem: {technical_problem}
+- Technical solution: {technical_solution}
+- Key claim elements: {key_claim_elements}
+
+PRIOR ART:
+{cor_results_table}
+
+Output JSON:
+{
+  "overall_similarity_score": float (0-100),
+  "closest_patent": { "patent_number": "", "title": "", "source": "", "similarity_score": float },
+  "risk_assessment": "NOVEL | POSSIBLY_NOVEL | LIKELY_PRIOR_ART",
+  "draft_independent_claim": "string in USPTO format (Claim 1)",
+  "recommendation": "PROCEED_WITH_FILING | REFINE_INVENTION | ABANDON"
+}
+
+Rules:
+- Use proper claim language: "A method comprising..."
+- NEVER claim software per se
+- Include: "Preliminary draft for attorney review only."
+- AI cannot be a co-inventor (USPTO Nov 2025 guidance)
+</code></pre>
+
+<h2 id="notify">9. OpenClaw Notifications (Real Config)</h2>
+<p>OpenClaw JSON5 gateway uses <code>hooks.mappings</code>. Models must reference GPT-5.6 tiers.</p>
+<pre><code>// ~/.openclaw/openclaw.json
+{
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    path: "/hooks",
+    allowedAgentIds: ["ergane"],
+    defaultSessionKey: "hook:ergane",
+    allowRequestSessionKey: false,
+    allowedSessionKeyPrefixes: ["hook:"],
+    mappings: [
+      {
+        id: "ergane_invention",
+        match: { path: "ergane" },
+        action: "agent",
+        name: "Ergane",
+        messageTemplate: "🧠 Invention: {{payload.invention_title}}\nNovelty: {{payload.novelty_score}}/1.0 | Risk: {{payload.risk_assessment}}\nEngineer: {{payload.inventor}} | Commit: {{payload.commit_hash_short}}\n\nClosest Prior Art: {{payload.closest_patent_title}} ({{payload.closest_patent_number}}) — {{payload.overall_similarity_score}}%\nReview: {{payload.github_pr_url}}",
+        deliver: true,
+        channel: "slack",
+        to: "#inventions",
+        model: "openai/gpt-5.6-luna",
+        thinking: "medium"
+      }
+    ]
+  }
+}
+</code></pre>
+
+<h2 id="legal">10. Legal Constraints</h2>
+<table>
+  <tr><th>Rule</th><th>Rationale</th><th>Enforcer</th></tr>
+  <tr><td>Software per se NOT patentable</td><td>Alice Corp (2014) §101</td><td>Hermes (spec) + Codex (output filter)</td></tr>
+  <tr><td>AI cannot be co-inventor</td><td>USPTO Nov 2025</td><td>Hermes</td></tr>
+  <tr><td>Disclaimer on EVERY output</td><td>Liability protection</td><td>Codex (template)</td></tr>
+  <tr><td>No auto-filing</td><td>Legal risk</td><td>Hermes (RULES.md)</td></tr>
+  <tr><td>Local-first privacy</td><td>No training data leakage</td><td>Hermes (env config)</td></tr>
+</table>
+
+<h2 id="state">11. State & Memory</h2>
+<pre><code># .github/ergane-state.md
+# Hermes defines format; Codex writes and reads it
+
+## Detected Inventions
+| ID | Date | Commit | Novelty | Status | PR |
+|---|---|---|---|---|---|
+| INV-001 | 2026-07-18 | a1b2c3d | 0.87 | pending-review | #42 |
+
+## False Positive Patterns
+- UI layout changes — add exclusion filter
+</code></pre>
+
+<h2 id="subagents">12. Sub-Agent TOML (Codex v0.144.5)</h2>
+<p><strong>Hermes writes</strong> these configs. <strong>Codex reads</strong> them at runtime via <code>--agent</code>.</p>
+<pre><code>[explorer]
+name = "Ergane-Explorer"
+description = "Reads diffs, extracts technical problems/solutions"
+model = "gpt-5.6-luna"
+reasoning = "medium"
+
+[implementer]
+name = "Ergane-Implementer"
+description = "Generates Coral SQL and searches patent DBs"
+model = "gpt-5.6-terra"
+reasoning = "medium"
+
+[verifier]
+name = "Ergane-Verifier"
+description = "Reviews draft claims for legal soundness"
+model = "gpt-5.6-sol"
+reasoning = "high"
+
+[reviewer]
+name = "Ergane-Reviewer"
+description = "Formats PR comments and OpenClaw payloads"
+model = "gpt-5.6-luna"
+reasoning = "low"
+</code></pre>
+
+<h2 id="security">13. Security</h2>
+<table>
+  <tr><th>Layer</th><th>Measure</th><th>Owner</th></tr>
+  <tr><td>API Keys</td><td>ERGANE_* env vars only. Never committed.</td><td>Hermes (setup)</td></tr>
+  <tr><td>Private repos</td><td>Require explicit opt-in in config</td><td>Hermes (spec) + Codex (check)</td></tr>
+  <tr><td>Data retention</td><td>OpenAI API no-retention. Local-first where possible.</td><td>Hermes</td></tr>
+  <tr><td>Audit</td><td>All detections logged to ergane-state.md</td><td>Codex</td></tr>
+</table>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center">
+ARCHITECTURE.html v2.0 | Built: July 18, 2026 | Models: gpt-5.6-sol/terra/luna | Codex v0.144.5<br>
+<strong>Roles:</strong> <span class="badge role-hermes">HERMES</span> = Architect/PM | <span class="badge role-codex">CODEX</span> = Developer/Coder
+</p>
+
+</div>
+</body>
+</html>

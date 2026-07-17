@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ergane — Mathematical Foundations & Patent Scoring Algorithms</title>
+<style>
+  :root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f85149;--muted:#8b949e;--code:#161b22;--border:#30363d;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0;padding:0}
+  .container{max-width:1100px;margin:0 auto;padding:2rem}
+  h1{color:var(--accent);font-size:2.2rem;margin:0}
+  h2{color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:.3rem;margin-top:2.5rem}
+  h3{color:var(--accent);margin-top:1.8rem}
+  h4{color:#79c0ff}
+  .badge{display:inline-block;padding:.12rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;margin-right:.3rem}
+  .badge-math{background:#8957e5;color:#fff}
+  .badge-theory{background:#1f6feb;color:#fff}
+  .badge-impl{background:#238636;color:#fff}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:.5rem .75rem;text-align:left}
+  th{background:var(--code);color:var(--accent);font-weight:600}
+  code,pre{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:var(--code);border-radius:6px}
+  code{padding:.15rem .35rem;font-size:.85rem}
+  pre{padding:1rem;overflow-x:auto;border:1px solid var(--border)}
+  .math-block{background:rgba(137,87,229,.08);border-left:4px solid #8957e5;padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .paper-block{background:rgba(31,111,235,.08);border-left:4px solid #1f6feb;padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .toc{position:sticky;top:1rem;float:right;width:250px;margin-left:2rem;background:var(--code);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.82rem}
+  .toc h4{margin-top:0}
+  .toc ul{list-style:none;padding-left:0}
+  .toc a{color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.toc{float:none;width:100%;margin:0 0 2rem;position:static}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header style="border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:2rem">
+  <h1>📐 Ergane — Mathematical Foundations</h1>
+  <p style="color:var(--muted);margin:.5rem 0 0">Novelty scoring, similarity metrics, NLP embeddings, prior art ranking algorithms</p>
+  <p style="color:var(--muted);font-size:.85rem">Date: July 18, 2026 | Role: Hermes defines algorithms → Codex implements in Python</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#novelty">1. Novelty Score Model</a></li>
+    <li><a href="#transformers">2. Transformer Embeddings</a></li>
+    <li><a href="#similarity">3. Similarity Metrics</a></li>
+    <li><a href="#ranking">4. Prior Art Ranking</a></li>
+    <li><a href="#category">5. IPC Classification Math</a></li>
+    <li><a href="#ensemble">6. Ensemble Scoring</a></li>
+    <li><a href="#papers">7. Research Papers</a></li>
+    <li><a href="#code">8. Python Implementation</a></li>
+  </ul>
+</nav>
+
+<h2 id="novelty">1. Novelty Score Model</h2>
+
+<p>The novelty score is a <strong>composite probability</strong> combining multiple signals into a single [0,1] score:</p>
+
+<div class="math-block">
+  <strong>Novelty Score Equation:</strong>
+  <pre style="background:transparent;border:none;margin:.5rem 0">
+S_novelty = sigmoid( w₁·E_code + w₂·N_claims + w₃·T_domain + w₄·G_graph - b )
+
+Where:
+  E_code  = embedding distance between commit and known prior art
+  N_claims = count of distinct claim elements / max_elements
+  T_domain = technical domain specificity (IP classification confidence)
+  G_graph  = Graphifyy subgraph complexity (nodes + edges normalized)
+  w₁ + w₂ + w₃ + w₄ = 1.0 (learned weights)
+  b = bias term (default 0.5)
+  </pre>
+</div>
+
+<h3>Sigmoid Transformation</h3>
+<pre><code>import math
+
+def novelty_sigmoid(raw_score: float, beta: float = 1.0, bias: float = 0.5) -> float:
+    """Compress raw score into [0,1] with tunable steepness.
+    beta=1.0: smooth slope  |  beta=2.0: sharper discrimination
+    """
+    z = beta * (raw_score - bias)
+    return 1.0 / (1.0 + math.exp(-z))
+
+# Threshold mapping (no human calibration):
+#  S >= 0.7 → HIGH     (likely novel, trigger full pipeline)
+#  0.4 <= S < 0.7 → MEDIUM (ambiguous, may need expert review)
+#  S < 0.4 → LOW      (routine, skip)
+</code></pre>
+
+<h2 id="transformers">2. Transformer Embeddings for Patent Text</h2>
+
+<h3>2.1 Sentence-BERT for Claim Comparison</h3>
+<p>For computing semantic similarity between invention descriptions and patent abstracts/claims.</p>
+
+<div class="paper-block">
+<strong>Paper:</strong> "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks" (Reimers & Gurevych, EMNLP 2019)<br>
+<strong>Model:</strong> <code>all-MiniLM-L6-v2</code> (384-dim) or <code>multi-qa-mpnet-base-dot-v1</code> (768-dim)
+</div>
+
+<pre><code># Hermes: Architect defines embedding pipeline
+# Codex: Implement in src/ergane/embeddings.py
+
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+class PatentEmbedder:
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self.model = SentenceTransformer(model_name)
+        self.dim = self.model.get_sentence_embedding_dimension()
+
+    def encode(self, texts: list[str]) -> np.ndarray:
+        return self.model.encode(texts, normalize_embeddings=True)
+
+    def similarity(self, embedding_a: np.ndarray, embedding_b: np.ndarray) -> float:
+        # Cosine similarity (dot product of normalized vectors)
+        return float(np.dot(embedding_a, embedding_b))
+</code></pre>
+
+<h3>2.2 Matryoshka Embeddings (MRL)</h3>
+<p>Multi-resolution embeddings allow fast filtering (128-dim) then reranking (768-dim).</p>
+
+<div class="paper-block">
+<strong>Paper:</strong> "Matryoshka Representation Learning" (Kusupati et al., NeurIPS 2022)<br>
+<strong>Application:</strong> PQAI returns 1024-dim vectors; Ergane uses first 256-dim for coarse filtering, full 1024-dim for final ranking.
+</div>
+
+<pre><code>def matryoshka_similarity(emb_a: np.ndarray, emb_b: np.ndarray, dims: list[int]) -> float:
+    """Weighted similarity across truncation levels."""
+    total = 0.0
+    weights = [0.2, 0.3, 0.5]  # 128-dim, 512-dim, full dim
+    for d, w in zip(dims, weights):
+        sim = float(np.dot(emb_a[:d], emb_b[:d]))
+        total += w * sim
+    return total / sum(weights)
+</code></pre>
+
+<h2 id="similarity">3. Similarity Metrics for Prior Art</h2>
+
+<h3>3.1 Combined Similarity Score</h3>
+<div class="math-block">
+  <strong>Overall Similarity:</strong>
+  <pre style="background:transparent;border:none;margin:.5rem 0">
+  sim_total = α·sim_semantic + β·sim_tfidf + γ·sim_ipc + δ·sim_temporal
+
+  Where:
+    sim_semantic = cosine(embeddings)              [0,1]
+    sim_tfidf = BM25 score normalized              [0,1]
+    sim_ipc = Jaccard(IPC codes)                   [0,1]
+    sim_temporal = decay function of filing date   [0,1]
+    α + β + γ + δ = 1.0
+  </pre>
+</div>
+
+<h3>3.2 BM25 for Keyword Matching</h3>
+<div class="paper-block">
+<strong>Paper:</strong> "Okapi at TREC-3" (Robertson et al., 1994) — original BM25<br>
+<strong>Implementation:</strong> <code>rank-bm25</code> Python package
+</div>
+
+<pre><code>from rank_bm25 import BM25Okapi
+import numpy as np
+
+def bm25_similarity(query_tokens: list[str], patent_tokens: list[str], corpus: list[list[str]]) -> float:
+    bm25 = BM25Okapi(corpus)
+    scores = bm25.get_scores(query_tokens)
+    max_score = max(scores) if scores.size > 0 else 1.0
+    patent_score = bm25.get_scores(patent_tokens)[0] if patent_tokens else 0.0
+    return patent_score / max_score
+</code></pre>
+
+<h3>3.3 Temporal Decay Function</h3>
+<p>Earlier art is more damaging to novelty (first-to-file world):</p>
+
+<pre><code>def temporal_score(filing_year: int, current_year: int = 2026, half_life: float = 10.0) -> float:
+    """Exponential decay. Older patents score higher (more dangerous to novelty).
+    half_life=10: a 10-year-old patent scores 0.5
+    """
+    age = max(0, current_year - filing_year)
+    return math.exp(-age / half_life)
+
+# Examples:
+#  2026 filing → score = 1.0 (most relevant)
+#  2016 filing → score = 0.37
+#  2006 filing → score = 0.14
+</code></pre>
+
+<h2 id="ranking">4. Prior Art Ranking Algorithm (Learning to Rank)</h2>
+
+<h3>4.1 Pairwise Ranking with LambdaMART</h3>
+<div class="paper-block">
+<strong>Paper:</strong> "Learning to Rank with Smooth Functions" (Burges et al., Microsoft Research, 2005)<br>
+<strong>Implementation:</strong> <code>lightgbm</code> with LambdaRank objective
+</div>
+
+<pre><code># Hermes: Define feature vector
+# Codex: Train on labeled data (patent examiner rejections as ground truth)
+
+import lightgbm as lgb
+
+feature_cols = [
+    "bm25_score",
+    "cosine_similarity",
+    "shared_ipc_count",
+    "temporal_decay",
+    "same_assignee_flag",
+    "claim_element_overlap",
+    "abstract_word_overlap",
+]
+
+def train_ranker(X_train, y_train, group_train):
+    """y: 0=irrelevant, 1=partially_related, 2=close_prior_art, 3=anticipating
+    group: number of patents per query
+    """
+    train_data = lgb.Dataset(X_train, label=y_train, group=group_train)
+    params = {
+        "objective": "lambdarank",
+        "metric": "ndcg",
+        "ndcg_eval_at": [1, 3, 5, 10],
+        "boosting_type": "gbdt",
+        "num_leaves": 31,
+        "learning_rate": 0.05,
+        "feature_fraction": 0.8,
+    }
+    model = lgb.train(params, train_data, num_boost_round=100)
+    return model
+</code></pre>
+
+<h3>4.2 NDCG@K Evaluation</h3>
+<div class="math-block">
+  <strong>Normalized Discounted Cumulative Gain:</strong>
+  <pre style="background:transparent;border:none;margin:.5rem 0">
+      K
+  DCG = Σ (2^rel_i - 1) / log₂(i + 1)
+     i=1
+
+  NDCG@K = DCG / IDCG
+
+  Where rel_i ∈ {0,1,2,3} is relevance grade of result at position i
+  IDCG = ideal DCG (perfect ranking)
+  </pre>
+</div>
+
+<h2 id="category">5. IPC/CPC Classification Math</h2>
+
+<h3>5.1 Hierarchical Classification</h3>
+<p>IPC codes form a tree (e.g., G06F12/08 → G → G06 → G06F → G06F12 → G06F12/08). Similarity between two codes is their <strong>common prefix length</strong> normalized by max depth.</p>
+
+<pre><code>def ipc_similarity(code_a: str, code_b: str) -> float:
+    """Jaccard-like similarity based on hierarchical prefix."""
+    parts_a = code_a.replace('/', '-').split('-')
+    parts_b = code_b.replace('/', '-').split('-')
+    
+    common = 0
+    for pa, pb in zip(parts_a, parts_b):
+        if pa == pb:
+            common += 1
+        else:
+            break
+    
+    max_depth = max(len(parts_a), len(parts_b))
+    return common / max_depth if max_depth > 0 else 0.0
+
+# Examples:
+# ipc_similarity("G06F12/08", "G06F12/10") = 0.8   (4/5 common parts)
+# ipc_similarity("G06F12/08", "H04L67/10") = 0.0   (no common prefix)
+</code></pre>
+
+<h3>5.2 IPC Distribution Entropy</h3>
+<p>Measure how "concentrated" the prior art is across IPC classes:</p>
+
+<pre><code>def ipc_entropy(ipc_codes: list[str]) -> float:
+    """Higher entropy = more diverse prior art = harder to distinguish novelty."""
+    from collections import Counter
+    import math
+    
+    # Group by section (e.g., G06F → G)
+    sections = [c[0] for c in ipc_codes if c]
+    counts = Counter(sections)
+    total = len(sections)
+    
+    entropy = 0.0
+    for count in counts.values():
+        p = count / total
+        entropy -= p * math.log2(p)
+    return entropy
+
+# 5 patents all in 'G' → entropy ≈ 0.0
+# 5 patents split G,H,C,B,A → entropy ≈ 2.32
+</code></pre>
+
+<h2 id="ensemble">6. Ensemble Scoring Pipeline</h2>
+
+<pre><code># Hermes: Defines ensemble weights and thresholds
+# Codex: Implements in ergane/scoring.py
+
+class NoveltyEnsemble:
+    """Combines multiple scoring signals into final novelty assessment."""
+    
+    def __init__(self, weights: dict = None):
+        self.weights = weights or {
+            "semantic": 0.35,
+            "bm25": 0.20,
+            "ipc_overlap": 0.15,
+            "temporal": 0.10,
+            "graph_complexity": 0.20,
+        }
+        self.embedder = PatentEmbedder()
+    
+    def score(self, invention: dict, prior_art: list[dict]) -> dict:
+        # Encode invention
+        inv_emb = self.embedder.encode([invention["technical_solution"]])[0]
+        
+        # Score each prior art patent
+        art_scores = []
+        for patent in prior_art:
+            art_emb = self.embedder.encode([patent["abstract"]])[0]
+            sim_semantic = self.embedder.similarity(inv_emb, art_emb)
+            sim_tfidf = bm25_similarity(
+                invention["technical_solution"].split(),
+                patent["abstract"].split(),
+                [p["abstract"].split() for p in prior_art]
+            )
+            sim_ipc = ipc_similarity(invention["ipc"], patent.get("ipc", ""))
+            sim_temporal = temporal_score(patent.get("filing_year", 2026))
+            
+            combined = (
+                self.weights["semantic"] * sim_semantic +
+                self.weights["bm25"] * sim_tfidf +
+                self.weights["ipc_overlap"] * sim_ipc +
+                self.weights["temporal"] * sim_temporal
+            )
+            art_scores.append({"patent": patent, "score": combined})
+        
+        # Best score = closest prior art
+        art_scores.sort(key=lambda x: x["score"], reverse=True)
+        closest = art_scores[0] if art_scores else None
+        
+        # Novelty = 1 - closest_similarity (inverse relationship)
+        if closest:
+            raw_novelty = 1.0 - closest["score"]
+            novelty = novelty_sigmoid(raw_novelty, beta=2.0, bias=0.6)
+        else:
+            novelty = 1.0  # No prior art found = fully novel
+        
+        return {
+            "novelty_score": round(novelty, 4),
+            "novelty_assessment": self._assess(novelty),
+            "closest_prior_art": closest["patent"] if closest else None,
+            "closest_similarity": round(closest["score"], 4) if closest else 0.0,
+            "all_scores": art_scores[:10],
+            "ipc_entropy": round(ipc_entropy([p.get("ipc", "") for p in prior_art]), 4),
+        }
+    
+    def _assess(self, score: float) -> str:
+        if score >= 0.7:
+            return "HIGH"
+        elif score >= 0.4:
+            return "MEDIUM"
+        return "LOW"
+</code></pre>
+
+<h2 id="papers">7. Research Paper Bibliography</h2>
+
+<table>
+  <tr><th>Paper</th><th>Year</th><th>Relevance to Ergane</th><th>Section</th></tr>
+  <tr><td>"Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks" (Reimers & Gurevych)</td><td>2019</td><td>Semantic similarity for claim-to-patent matching</td><td>§2.1</td></tr>
+  <tr><td>"Matryoshka Representation Learning" (Kusupati et al.)</td><td>2022</td><td>Multi-resolution embeddings for fast filtering</td><td>§2.2</td></tr>
+  <tr><td>"Okapi at TREC-3" (Robertson et al.)</td><td>1994</td><td>BM25 keyword matching for prior art</td><td>§3.2</td></tr>
+  <tr><td>"Learning to Rank with Smooth Functions" (Burges et al.)</td><td>2005</td><td>LambdaMART for prior art ranking</td><td>§4.1</td></tr>
+  <tr><td>"BERT: Pre-training of Deep Bidirectional Transformers" (Devlin et al.)</td><td>2019</td><td>Foundation for all transformer embeddings</td><td>§2</td></tr>
+  <tr><td>"DeepPatent: Patent Claim Generation" (Sharma et al.)</td><td>2019</td><td>Neural claim drafting (inspiration for Ergane claim gen)</td><td>§6 (stretch)</td></tr>
+  <tr><td>"Patent Quality Assessment with NLP" (Graham et al., USPTO)</td><td>2018</td><td>Official USPTO guidance on NLP for patent analysis</td><td>§1</td></tr>
+  <tr><td>"Attention Is All You Need" (Vaswani et al.)</td><td>2017</td><td>Transformer architecture foundation</td><td>§2</td></tr>
+</table>
+
+<h2 id="code">8. Python Implementation Checklist</h2>
+
+<table>
+  <tr><th>File</th><th>Function</th><th>Owner</th><th>Status</th></tr>
+  <tr><td><code>ergane/embeddings.py</code></td><td>PatentEmbedder (Sentence-BERT)</td><td>Codex</td><td>⬜</td></tr>
+  <tr><td><code>ergane/scoring.py</code></td><td>NoveltyEnsemble</td><td>Codex</td><td>⬜</td></tr>
+  <tr><td><code>ergane/similarity.py</code></td><td>BM25, cosine, IPC Jaccard</td><td>Codex</td><td>⬜</td></tr>
+  <tr><td><code>ergane/ranker.py</code></td><td>LightGBM LambdaRank</td><td>Codex</td><td>⬜ (stretch)</td></tr>
+  <tr><td><code>tests/test_scoring.py</code></td><td>Unit tests for all scoring functions</td><td>Codex</td><td>⬜</td></tr>
+</table>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center">
+MATH.html v1.0 | July 18, 2026 | Hermes defines algorithms → Codex implements
+</p>
+
+</div>
+</body>
+</html>

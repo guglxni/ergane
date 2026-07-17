@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ergane — Codex CLI Harness & GPT-5.6 Model Orchestration</title>
+<style>
+  :root{--bg:#0d1117;--fg:#c9d1d9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f85149;--muted:#8b949e;--code:#161b22;--border:#30363d;}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6;margin:0;padding:0}
+  .container{max-width:1250px;margin:0 auto;padding:2rem}
+  header{border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:2rem}
+  h1{color:var(--accent);font-size:2.4rem;margin:0}
+  h2{color:var(--accent2);border-bottom:1px solid var(--border);padding-bottom:.3rem;margin-top:2.5rem}
+  h3{color:var(--accent);margin-top:1.8rem}
+  h4{color:#79c0ff;margin-top:1.2rem}
+  .badge{display:inline-block;padding:.12rem .5rem;border-radius:4px;font-size:.72rem;font-weight:600;margin-right:.3rem}
+  .badge-sol{background:#7ee787;color:#000}
+  .badge-terra{background:#58a6ff;color:#fff}
+  .badge-luna{background:#8957e5;color:#fff}
+  .badge-harness{background:#f85149;color:#fff}
+  .badge-feature{background:#238636;color:#fff}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.88rem}
+  th,td{border:1px solid var(--border);padding:.45rem .7rem;text-align:left}
+  th{background:var(--code);color:var(--accent);font-weight:600}
+  tr:nth-child(even){background:rgba(255,255,255,.02)}
+  code,pre{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:var(--code);border-radius:6px}
+  code{padding:.12rem .3rem;font-size:.82rem}
+  pre{padding:1rem;overflow-x:auto;border:1px solid var(--border)}
+  .geo{font-family:'SFMono-Regular',monospace;background:rgba(88,166,255,.1);border-left:4px solid var(--accent);padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .warn-geo{background:rgba(248,81,73,.08);border-left:4px solid var(--warn);padding:1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+  .feature-box{border:1px solid var(--border);border-radius:8px;padding:1rem;margin:.75rem 0;background:var(--code)}
+  .feature-title{color:var(--accent2);font-weight:600;margin-bottom:.3rem}
+  .cmd-block{background:#000;border:1px solid var(--border);border-radius:6px;padding:.75rem 1rem;margin:.5rem 0;font-family:monospace;font-size:.82rem;overflow-x:auto}
+  .cmd-comment{color:var(--muted)}
+  .toc{position:sticky;top:1rem;float:right;width:280px;margin-left:2rem;background:var(--code);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.8rem}
+  .toc h4{margin-top:0}
+  .toc ul{list-style:none;padding-left:0}
+  .toc a{color:var(--accent);text-decoration:none}
+  @media(max-width:950px){.toc{float:none;width:100%;margin:0 0 2rem;position:static}}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:700px){.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🎛️ Ergane — Codex CLI Harness & GPT-5.6 Orchestration</h1>
+  <p style="color:var(--muted);margin:.5rem 0 0">Live-verified: July 18, 2026 | Every codex flag, approval mode, reasoning effort, and multi-agent feature mapped to Ergane's loop engineering harness</p>
+</header>
+
+<nav class="toc">
+  <h4>Contents</h4>
+  <ul>
+    <li><a href="#models">1. GPT-5.6 Model Deep-Dive</a></li>
+    <li><a href="#reasoning">2. Reasoning Effort & Modes</a></li>
+    <li><a href="#features">3. GPT-5.6 API Features</a></li>
+    <li><a href="#codex-cli">4. Codex CLI Features</a></li>
+    <li><a href="#approval">5. Approval & Sandbox</a></li>
+    <li><a href="#subagents">6. Subagent Workflows</a></li>
+    <li><a href="#skills">7. Skills & Worktrees</a></li>
+    <li><a href="#harness">8. Ergane Harness Design</a></li>
+    <li><a href="#commands">9. Concrete Commands</a></li>
+    <li><a href="#config">10. config.toml Reference</a></li>
+  </ul>
+</nav>
+
+<h2 id="models">1. GPT-5.6 Model Deep-Dive (Live-Verified July 18, 2026)</h2>
+
+<table>
+  <tr><th>Model</th><th>Slug</th><th>Input $/1M</th><th>Output $/1M</th><th>Persona</th><th>Best For</th></tr>
+  <tr><td><span class="badge badge-sol">SOL</span></td><td><code>gpt-5.6-sol</code></td><td>$5.00</td><td>$30.00</td><td>Frontier, detail, polish</td><td>Complex legal review, claim drafting, deep analysis</td></tr>
+  <tr><td><span class="badge badge-terra">TERRA</span></td><td><code>gpt-5.6-terra</code></td><td>$2.50</td><td>$15.00</td><td>Pragmatic all-rounder</td><td>Everyday implementation, SQL generation, synthesis</td></tr>
+  <tr><td><span class="badge badge-luna">LUNA</span></td><td><code>gpt-5.6-luna</code></td><td>$1.00</td><td>$6.00</td><td>Fast, repeatable</td><td>Diff parsing, classification, notification formatting</td></tr>
+  <tr><td colspan="6"><strong>Alias:</strong> <code>gpt-5.6</code> → routes to <code>gpt-5.6-sol</code>. Old gpt-5.2/gpt-5.3-codex are deprecated in Codex.</td></tr>
+</table>
+
+<div class="geo">
+<strong>Key insight:</strong> GPT-5.6 Sol achieves state-of-the-art on coding benchmarks while using <strong>less than half the output tokens, less than half the time, and roughly one-third the cost</strong> vs frontier competitors. Terra is roughly 2x cheaper than Sol with competitive performance to GPT-5.5. Luna is the lowest-cost tier.
+</div>
+
+<h2 id="reasoning">2. Reasoning Effort & Pro Mode</h2>
+
+<table>
+  <tr><th>Effort</th><th>Latency</th><th>Cost</th><th>When to Use</th><th>Ergane Assignment</th></tr>
+  <tr><td><code>none</code></td><td>Fastest</td><td>Lowest</td><td>Latency-critical, no tool chains</td><td>Never for Ergane (needs tool use)</td></tr>
+  <tr><td><code>low</code></td><td>Fast</td><td>Low</td><td>Tool use, planning, search, multi-step decisions</td><td>Luna: Stage 4 (Reviewer), Stage 1 (Explorer)</td></tr>
+  <tr><td><code>medium</code></td><td>Balanced</td><td>Medium</td><td>Default. Planning, complex reasoning, judgement</td><td>Terra: Stage 2 (Implementer)</td></tr>
+  <tr><td><code>high</code></td><td>Slower</td><td>Higher</td><td>Hard reasoning, complex debugging, agentic tasks</td><td>Sol: Stage 3 (Verifier baseline)</td></tr>
+  <tr><td><code>xhigh</code></td><td>Slow</td><td>High</td><td>Deep research, async workflows, long runs</td><td>Sol: Stage 3 (escalation only)</td></tr>
+  <tr><td><code>max</code></td><td>Slowest</td><td>Highest</td><td>Hardest quality-first workloads</td><td>Sol: Claim drafting, prior art synthesis only</td></tr>
+</table>
+
+<h3>2.1 Pro Mode (Separate from Effort)</h3>
+<p>Pro mode performs <strong>more model work</strong> before returning a single answer. It is independent of reasoning effort.</p>
+<ul>
+  <li><strong>Standard mode</strong> (default): Normal reasoning pipeline</li>
+  <li><strong>Pro mode</strong> (<code>reasoning.mode: "pro"</code>): Extra verification, exploration, refinement. Higher latency + token cost. Billed at standard rates.</li>
+</ul>
+
+<div class="warn-geo">
+<strong>Ergane rule:</strong> Use pro mode <em>only</em> for Stage 3 (Verifier) claim drafting when novelty score ≥ 0.7. Standard mode for all other stages. Never use pro mode for Luna/Terra — cost outweighs benefit.
+</div>
+
+<h3>2.2 Ultra Mode (Codex Desktop / Multi-Agent Beta)</h3>
+<p><code>ultra</code> coordinates <strong>4 parallel agents by default</strong> (configurable up to 16). Available in:</p>
+<ul>
+  <li>ChatGPT Desktop: Pro/Enterprise users</li>
+  <li>Codex CLI: Plus and higher plans</li>
+  <li>Responses API: Multi-agent beta (programmatic)</li>
+</ul>
+
+<div class="geo">
+<strong>Ergane ultra strategy:</strong> For a single commit scan, spawn 4 parallel subagents:<br>
+(1) Luna — diff parsing | (2) Terra — Coral SQL generation | (3) Terra — USPTO direct search | (4) Luna — EPO search<br>
+Then Sol synthesizes all 4 outputs. Wall-clock time drops ~60% vs sequential.
+</div>
+
+<h2 id="features">3. GPT-5.6 API Features for Ergane</h2>
+
+<h3>3.1 Programmatic Tool Calling (PTC)</h3>
+<div class="feature-box">
+  <div class="feature-title">What it does</div>
+  GPT-5.6 writes JavaScript to call eligible tools, pass results between calls, and process intermediate outputs in a hosted runtime. ZDR-compatible. No container costs.
+</div>
+
+<div class="feature-box">
+  <div class="feature-title">When Ergane uses it</div>
+  <ul>
+    <li><strong>Stage 2 (Implementer):</strong> PTC script fetches USPTO + EPO + PQAI in parallel, joins results, deduplicates patent numbers, returns ranked JSON</li>
+    <li><strong>Stage 4 (Reviewer):</strong> PTC script validates webhook payload schema against OpenClaw JSON5 schema before POST</li>
+  </ul>
+</div>
+
+<pre><code>{
+  "model": "gpt-5.6-terra",
+  "tools": [{
+    "type": "programmatic_tool_calling"
+  }, {
+    "type": "function",
+    "function": {
+      "name": "search_uspto",
+      "description": "Search USPTO patent database"
+    },
+    "allowed_callers": ["direct", "programmatic"]
+  }],
+  "input": "Search USPTO, EPO, and PQAI for 'distributed cache invalidation', deduplicate by publication number, rank by combined score. Return JSON."
+}</code></pre>
+
+<h3>3.2 Explicit Prompt Caching</h3>
+<table>
+  <tr><th>Feature</th><th>Old Models</th><th>GPT-5.6</th></tr>
+  <tr><td>Cache write cost</td><td>No extra fee</td><td>1.25x input rate</td></tr>
+  <tr><td>Cache read cost</td><td>90% discount</td><td>90% discount (unchanged)</td></tr>
+  <tr><td>Control</td><td>Implicit only</td><td>Implicit + explicit breakpoints</td></tr>
+  <tr><td>TTL</td><td>Implicit</td><td>30m minimum (explicit <code>prompt_cache_options.ttl</code>)</td></tr>
+  <tr><td>Key matching</td><td>Automatic</td><td>Must set <code>prompt_cache_key</code> for reliable matching</td></tr>
+</table>
+
+<div class="geo">
+<strong>Ergane caching strategy:</strong>
+<ul>
+  <li>Set <code>prompt_cache_key: "ergane:system-prompt:v1"</code> for the stable system prompt (legal disclaimer + output schema)</li>
+  <li>Place explicit breakpoint after system prompt block</li>
+  <li>Per-request: diff text + prior art results (no breakpoint — changes every time)</li>
+  <li>This saves ~40% of input tokens on scans 2-N in a session</li>
+</ul>
+</div>
+
+<h3>3.3 Tool Search (Deferred Loading)</h3>
+<p>Only gpt-5.4+ supports <code>tool_search</code>. The model searches for relevant tools instead of loading all upfront. Reduces token usage when tool surface is large.</p>
+
+<pre><code>{
+  "model": "gpt-5.6-sol",
+  "tools": [{
+    "type": "tool_search",
+    "tool_search": {
+      "tool_directory": "/mcp/patent_tools"
+    }
+  }],
+  "input": "I need to search patent databases and draft a claim"
+}
+# Model loads only patent_search_uspto, patent_search_epo, patent_draft_claim
+# instead of all 111 MCP tools from patent-client-agents</code></pre>
+
+<h2 id="codex-cli">4. Codex CLI Features (Live-Extracted)</h2>
+
+<h3>4.1 Command Reference</h3>
+<table>
+  <tr><th>Command</th><th>Purpose</th><th>Ergane Usage</th></tr>
+  <tr><td><code>codex</code></td><td>Interactive TUI</td><td>Hermes ad-hoc debugging</td></tr>
+  <tr><td><code>codex exec</code></td><td>Non-interactive execution</td><td><strong>Primary Ergane harness</strong></td></tr>
+  <tr><td><code>codex exec --model</code></td><td>Override model per run</td><td>Stage-specific assignment</td></tr>
+  <tr><td><code>codex exec --sandbox</code></td><td>Sandbox mode</td><td><code>workspace-write</code> for Codex</td></tr>
+  <tr><td><code>codex exec --approval-mode</code></td><td>Approval preset</td><td><code>on-request</code> (default) or <code>never</code> for CI</td></tr>
+  <tr><td><code>codex mcp add</code></td><td>Add MCP server</td><td>Coral, OpenClaw, GitHub</td></tr>
+  <tr><td><code>codex features</code></td><td>Toggle feature flags</td><td>Enable multi-agent beta</td></tr>
+  <tr><td><code>/model</code></td><td>Switch model mid-session</td><td>Interactive only</td></tr>
+  <tr><td><code>/permissions</code></td><td>Adjust approval policy</td><td>Mid-session safety changes</td></tr>
+  <tr><td><code>/agent</code></td><td>Switch subagent thread</td><td>Multi-agent orchestration</td></tr>
+  <tr><td><code>/review</code></td><td>Working tree review</td><td>Post-execution quality gate</td></tr>
+  <tr><td><code>/skills</code></td><td>Browse/use skills</td><td>Invoke $ergane-detect etc.</td></tr>
+  <tr><td><code>/compact</code></td><td>Summarize chat context</td><td>Long sessions before token limit</td></tr>
+  <tr><td><code>/fork</code></td><td>New chat preserving context</td><td>Branch analysis paths</td></tr>
+</table>
+
+<h3>4.2 Deprecated vs Current Flags</h3>
+<table>
+  <tr><th>Old (Deprecated)</th><th>New (Current)</th><th>Status</th></tr>
+  <tr><td><code>codex exec --full-auto</code></td><td><code>codex exec --sandbox workspace-write</code></td><td>Deprecated, prints warning</td></tr>
+  <tr><td><code>codex models list</code></td><td><code>codex debug models</code></td><td>New subcommand</td></tr>
+  <tr><td>GPT-5.2 / gpt-5.3-codex</td><td>gpt-5.6-sol/terra/luna</td><td>Deprecated in Codex</td></tr>
+</table>
+
+<div class="warn-geo">
+<strong>Known bug (openai/codex#31873):</strong> The <code>/model</code> interactive picker does NOT display GPT-5.6 models even though they work. Always use <code>-m gpt-5.6-*</code> flag instead.
+</div>
+
+<h2 id="approval">5. Approval Modes & Sandbox Configuration</h2>
+
+<h3>5.1 Approval Policy Matrix</h3>
+<table>
+  <tr><th>Mode</th><th>Flag</th><th>Edits</th><th>Network</th><th>Commands</th><th>Ergane Context</th></tr>
+  <tr><td>Auto</td><td><code>--ask-for-approval on-request</code></td><td>Auto (workspace)</td><td>Ask</td><td>Auto (trusted)</td><td><strong>Hermes interactive</strong></td></tr>
+  <tr><td>Untrusted</td><td><code>--ask-for-approval untrusted</code></td><td>Auto (workspace)</td><td>Ask</td><td>Ask (untrusted)</td><td>Default safe mode</td></tr>
+  <tr><td>Never</td><td><code>--ask-for-approval never</code></td><td>Auto</td><td>Auto</td><td>Auto</td><td><strong>CI/GitHub Action</strong></td></tr>
+  <tr><td>Read-only</td><td><code>--sandbox read-only</code></td><td>Blocked</td><td>Blocked</td><td>Blocked</td><td>Auditor/reviewer only</td></tr>
+  <tr><td>Danger</td><td><code>--dangerously-bypass-approvals-and-sandbox</code></td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td><td>Never for Ergane</td></tr>
+</table>
+
+<h3>5.2 Auto-Review Mode (Critical for Ergane)</h3>
+<div class="feature-box">
+  <div class="feature-title">Auto-Review: <code>approvals_reviewer = "auto_review"</code></div>
+  Routes eligible approval requests through a <strong>reviewer agent</strong> before surfacing to the user. The reviewer evaluates sandbox escalations, blocked network requests, and side-effecting MCP tool calls. Actions inside the sandbox continue without extra review.
+</div>
+
+<pre><code>codex exec \
+  --sandbox workspace-write \
+  --ask-for-approval on-request \
+  --config approvals_reviewer=auto_review \
+  -m gpt-5.6-sol \
+  "Verify prior art synthesis output against legal constraints before posting to GitHub"
+</code></pre>
+
+<h3>5.3 Network Access Control</h3>
+<pre><code># ~/.codex/config.toml
+[sandbox_workspace_write]
+network_access = true  # Required for USPTO/EPO/PQAI API calls
+allowed_domains = [
+  "api.openai.com",
+  "api.uspto.gov",
+  "ops.epo.org",
+  "api.projectpq.ai",
+  "api.github.com"
+]</code></pre>
+
+<h2 id="subagents">6. Subagent Workflows & Multi-Agent</h2>
+
+<h3>6.1 Ergane's Parallel Subagent Map</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│  HERMES (Orchestrator) — gpt-5.6-sol, reasoning: high          │
+│  No direct API calls. Decides branching, assigns agents.        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+   ┌────▼────┐          ┌────▼────┐          ┌────▼────┐
+   │Explorer │          │SQL Gen  │          │Direct   │
+   │Luna     │          │Terra    │          │Luna     │
+   │low      │          │medium   │          │low      │
+   │diff+AST │          │Coral    │          │USPTO    │
+   └────┬────┘          └────┬────┘          └────┬────┘
+        │                     │                     │
+        └─────────────────────┼─────────────────────┘
+                              │
+                        ┌─────▼─────┐
+                        │ Synthesis │
+                        │ Sol       │
+                        │ high/max  │
+                        │ pro mode  │
+                        └─────┬─────┘
+                              │
+                        ┌─────▼─────┐
+                        │ Reviewer  │
+                        │ Luna      │
+                        │ low       │
+                        │ PR+webhook│
+                        └───────────┘
+</code></pre>
+
+<h3>6.2 Multi-Agent Beta (Responses API)</h3>
+<p>GPT-5.6 supports coordinating multiple subagents in parallel via the Responses API. Ergane uses this for the <strong>3 parallel searches</strong> (USPTO + EPO + PQAI) in Stage 2.</p>
+
+<pre><code>{
+  "model": "gpt-5.6-terra",
+  "input": "Coordinate 3 parallel patent searches and synthesize results",
+  "tool_choice": "required",
+  "tools": [
+    {"type": "function", "function": {"name": "search_uspto"}},
+    {"type": "function", "function": {"name": "search_epo"}},
+    {"type": "function", "function": {"name": "search_pqai"}}
+  ],
+  "reasoning": {"effort": "medium", "mode": "standard"}
+}</code></pre>
+
+<h3>6.3 ChatGPT Desktop Worktrees</h3>
+<p>The ChatGPT desktop app can run scheduled tasks in <strong>isolated Git worktrees</strong>. Each agent gets its own working directory + branch context.</p>
+
+<div class="geo">
+<strong>Ergane worktree strategy:</strong>
+<ul>
+  <li>Main loop runs in <code>~/ergane</code></li>
+  <li>Each <code>codex exec</code> invocation creates a temporary worktree under <code>/tmp/ergane-wt-&lt;uuid&gt;/</code></li>
+  <li>The worktree contains a shallow clone of the target repo + the ergane state file</li>
+  <li>Prevents contamination between scans; allows parallel execution without git lock conflicts</li>
+</ul>
+</div>
+
+<h2 id="skills">7. Skills Architecture</h2>
+
+<h3>7.1 Skill Locations</h3>
+<table>
+  <tr><th>Scope</th><th>Path</th><th>Use</th></tr>
+  <tr><td>Repository</td><td><code>~/ergane/.agents/skills/</code></td><td>Ergane-specific skills (checked into git)</td></tr>
+  <tr><td>User</td><td><code>~/.agents/skills/</code></td><td>Personal skills (Hermes-level)</td></tr>
+  <tr><td>Admin</td><td><code>/etc/openai/codex/skills/</code></td><td>Org-wide (not used)</td></tr>
+  <tr><td>System</td><td>Bundled with Codex</td><td>Built-in ($skill-creator, etc.)</td></tr>
+</table>
+
+<h3>7.2 Ergane Skills</h3>
+<pre><code>~/ergane/.agents/skills/
+├── ergane-detect/
+│   ├── SKILL.md
+│   └── references/
+│       └── claim-format.md
+├── ergane-prior-art/
+│   ├── SKILL.md
+│   └── references/
+│       └── uspto-cql-guide.md
+├── ergane-synthesize/
+│   ├── SKILL.md
+│   └── references/
+│       └── alice-corp-ruling.md
+└── ergane-notify/
+    ├── SKILL.md
+    └── references/
+        └── openclaw-schema.json
+</code></pre>
+
+<h3>7.3 Skill Invocation</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># Explicit — Hermes mentions skill in prompt</span><br>
+codex exec -m gpt-5.6-luna "$ergane-detect: analyze this git diff for patentable subject matter"<br><br>
+<span class="cmd-comment"># Implicit — description matches task</span><br>
+codex exec -m gpt-5.6-terra "Search patent databases for prior art on distributed cache invalidation"<br>
+<span class="cmd-comment"># → Codex auto-loads $ergane-prior-art skill</span>
+</div>
+
+<h2 id="harness">8. Ergane Loop Engineering Harness</h2>
+
+<h3>8.1 Harness Design Principles</h3>
+<ol>
+  <li><strong>Model-tier routing:</strong> Luna for fast/filter tasks, Terra for balanced work, Sol for quality-first tasks</li>
+  <li><strong>Reasoning effort calibration:</strong> Never max on Luna (waste). Always low on Luna. Medium on Terra. High/max only on Sol when quality justify cost.</li>
+  <li><strong>Pro mode gating:</strong> Only Sol + pro mode for claim drafting. Standard mode for everything else.</li>
+  <li><strong>PTC for bounded pipelines:</strong> Use Programmatic Tool Calling when the tool sequence is predictable (3 patent searches → join → dedup)</li>
+  <li><strong>Cache the static prompt:</strong> Explicit breakpoint after system prompt. Saves ~40% tokens on repeated scans.</li>
+  <li><strong>Auto-review for safety:</strong> Enable <code>approvals_reviewer=auto_review</code> on Sol invocations that produce legal-adjacent output</li>
+  <li><strong>Worktree isolation:</strong> Each scan gets clean git state. No cross-contamination.</li>
+  <li><strong>Ultra for batch processing:</strong> When scanning N commits, spin 4 parallel Luna agents to partition the work</li>
+</ol>
+
+<h3>8.2 Stage-by-Stage Harness Specification</h3>
+
+<table>
+  <tr><th>Stage</th><th>Agent</th><th>Model</th><th>Reasoning</th><th>Mode</th><th>PTC</th><th>Cache</th><th>Auto-Review</th></tr>
+  <tr><td>1. Detect</td><td>Explorer</td><td><code>gpt-5.6-luna</code></td><td><code>low</code></td><td>standard</td><td>No</td><td>Yes</td><td>No</td></tr>
+  <tr><td>2a. Coral SQL</td><td>Implementer</td><td><code>gpt-5.6-terra</code></td><td><code>medium</code></td><td>standard</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+  <tr><td>2b. Direct API</td><td>Implementer</td><td><code>gpt-5.6-luna</code></td><td><code>low</code></td><td>standard</td><td>Yes</td><td>No</td><td>No</td></tr>
+  <tr><td>3a. Synthesis</td><td>Verifier</td><td><code>gpt-5.6-sol</code></td><td><code>high</code></td><td>standard</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+  <tr><td>3b. Claim Draft</td><td>Verifier</td><td><code>gpt-5.6-sol</code></td><td><code>max</code></td><td><strong>pro</strong></td><td>No</td><td>Yes</td><td><strong>Yes</strong></td></tr>
+  <tr><td>4. Notify</td><td>Reviewer</td><td><code>gpt-5.6-luna</code></td><td><code>low</code></td><td>standard</td><td>Yes</td><td>No</td><td>No</td></tr>
+</table>
+
+<h3>8.3 Ouro Loop Gates (Enhanced with Codex Features)</h3>
+
+<table>
+  <tr><th>Gate</th><th>Original</th><th>Codex Enhancement</th></tr>
+  <tr><td><strong>EXIST</strong></td><td>Verify files exist</td><td>Use <code>/review</code> working tree inspection before each stage</td></tr>
+  <tr><td><strong>RELEVANCE</strong></td><td>Verify output matches spec</td><td>Use <code>approvals_reviewer=auto_review</code> to gate low-quality outputs</td></tr>
+  <tr><td><strong>ROOT_CAUSE</strong></td><td>Trace errors to source</td><td>Use <code>/status</code> to inspect token usage + tool call history</td></tr>
+  <tr><td><strong>MOMENTUM</strong></td><td>Check forward progress</td><td>Use <code>/compact</code> when context window grows; fork with <code>/fork</code> if stalled</td></tr>
+  <tr><td><strong>RECALL</strong></td><td>Update state file</td><td>Use skills to persist structured output to <code>.github/ergane-state.md</code></td></tr>
+</table>
+
+<h2 id="commands">9. Concrete Codex Commands for Ergane</h2>
+
+<h3>9.1 Stage 1: Detection</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># Fast extraction — Luna, low reasoning, cache system prompt</span><br>
+codex exec \
+  -m gpt-5.6-luna \
+  --sandbox workspace-write \
+  --approval-mode never \
+  --config prompt_cache_key=ergane:stage1:v1 \
+  "$ergane-detect: Read the git diff between HEAD~1 and HEAD. Extract: technical_problem, technical_solution, key_claim_elements. Return strict JSON. No legal advice. Repository: $(pwd)"
+</div>
+
+<h3>9.2 Stage 2: Prior Art Search (Parallel)</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># Parallel search — Terra, medium reasoning, PTC for 3 APIs</span><br>
+codex exec \
+  -m gpt-5.6-terra \
+  --sandbox workspace-write \
+  --approval-mode never \
+  --config prompt_cache_key=ergane:stage2:v1 \
+  "$ergane-prior-art: Search USPTO, EPO, and PQAI for prior art matching the invention description. Use programmatic tool calling to run searches in parallel, deduplicate, and return top 20 results ranked by combined similarity. Invention: {invention_json}"
+</div>
+
+<h3>9.3 Stage 3: Synthesis + Claim Draft</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># High-quality synthesis — Sol, high reasoning, standard mode</span><br>
+codex exec \
+  -m gpt-5.6-sol \
+  --sandbox workspace-write \
+  --approval-mode on-request \
+  --config approvals_reviewer=auto_review \
+  --config prompt_cache_key=ergane:stage3:v1 \
+  "$ergane-synthesize: Compare invention against prior art table. Output: novelty_score (0-1), risk_assessment, draft_independent_claim. Use proper claim language. Include disclaimer. Prior art: {prior_art_json}"
+</div>
+
+<div class="cmd-block">
+<span class="cmd-comment"># Pro mode escalation — only if novelty_score ≥ 0.7</span><br>
+codex exec \
+  -m gpt-5.6-sol \
+  --sandbox workspace-write \
+  --approval-mode on-request \
+  --config reasoning.mode=pro \
+  --config reasoning.effort=max \
+  --config approvals_reviewer=auto_review \
+  "Refine the draft independent claim. Verify: no software-per-se, proper antecedent basis, clear technical effect. This is pro-mode review."
+</div>
+
+<h3>9.4 Stage 4: Notification</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># Fast formatting — Luna, low reasoning, PTC for webhook validation</span><br>
+codex exec \
+  -m gpt-5.6-luna \
+  --sandbox workspace-write \
+  --approval-mode never \
+  "$ergane-notify: Format PR comment (markdown) and OpenClaw webhook JSON. Validate payload against openclaw-schema.json. Results: {results_json}"
+</div>
+
+<h3>9.5 Batch Scan (Ultra Mode — 4 parallel agents)</h3>
+<div class="cmd-block">
+<span class="cmd-comment"># Ultra: 4 Luna agents partition 20 commits into 4 groups of 5</span><br>
+codex exec \
+  -m gpt-5.6-luna \
+  --sandbox workspace-write \
+  --approval-mode never \
+  --experimental multi-agent \
+  "Spawn 4 parallel subagents. Each scans 5 commits from the last 20. Each outputs novelty_score + technical_problem. Main agent synthesizes all 4 outputs into ergane-state.md."
+</div>
+
+<h2 id="config">10. Complete config.toml Reference</h2>
+
+<pre><code># ~/.codex/config.toml — Hermes configures once; all Codex invocations inherit
+
+model = "gpt-5.6-sol"              # Default model for interactive mode
+reasoning.effort = "medium"         # Default effort
+reasoning.mode = "standard"          # Never default to pro
+
+[sandbox_workspace_write]
+network_access = true
+allowed_domains = [
+  "api.openai.com",
+  "api.uspto.gov",
+  "ops.epo.org",
+  "api.projectpq.ai",
+  "api.github.com",
+  "hooks.openclaw.dev"
+]
+
+[approval_policy]
+mode = "on-request"                  # Default: ask for dangerous actions
+# For CI runs, override with: --approval-mode never
+
+[approvals_reviewer]
+mode = "auto_review"                 # Route approvals through reviewer agent
+
+[prompt_caching]
+mode = "explicit"                    # Use explicit breakpoints only
+ttl = "30m"
+
+# MCP Servers (Hermes adds these)
+[[mcp_servers]]
+name = "coral"
+type = "stdio"
+command = "coral mcp-stdio"
+
+[[mcp_servers]]
+name = "github"
+type = "stdio"
+command = "npx -y @github/mcp-server"
+
+# Profile overrides
+# ~/.codex/ci.config.toml — used by GitHub Action
+# model = "gpt-5.6-luna"
+# approval_policy = "never"
+# sandbox_workspace_write.network_access = true
+</code></pre>
+
+<hr>
+<p style="color:var(--muted);font-size:.85rem;text-align:center">
+CODEX_HARNESS.html v1.0 | July 18, 2026 | Sources: developers.openai.com (codex/models, codex/skills, codex/cli/reference, api/reasoning, api/prompt-caching)<br>
+All features verified against live OpenAI docs. GPT-5.6 launched July 9, 2026. Codex CLI v0.144.5.
+</p>
+
+</div>
+</body>
+</html>
