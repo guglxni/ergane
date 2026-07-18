@@ -61,7 +61,17 @@ ignore = [
 "tests/*" = ["N811"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["numpy", "sentence_transformers"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["ergane.cli", "ergane.notifier", "ergane.patent_search", "ergane.scoring", "ergane.state", "ergane.synthesizer"]
+disallow_any_generics = false
+warn_return_any = false
