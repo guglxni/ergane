@@ -10,7 +10,7 @@
 | Severity | Open | Resolved in this review |
 |---|---:|---:|
 | Critical | 0 | 0 |
-| High | 0 | 3 |
+| High | 0 | 4 |
 | Medium | 1 | 0 |
 | Low | 1 | 0 |
 
@@ -53,9 +53,25 @@ Workflow dependencies referenced mutable tags such as `@v4` and `@v5`.
 SHA. The repository also has locked Python dependencies, Dependabot configuration,
 dependency review, CodeQL, and scheduled `pip-audit` checks.
 
+### [HIGH] SR-004 — PR-controlled code could receive release credentials
+
+- **Category:** OWASP A05 Security Misconfiguration / A08 Software and Data Integrity Failures
+- **Location:** `.github/workflows/ergane.yml`
+- **Confidence:** 10/10
+
+The original pull-request job checked out and executed the pull-request version
+of the CLI while exposing the OpenAI key and a pull-request-write token. A
+malicious branch could modify executable code to exfiltrate those values.
+
+**Remediation:** untrusted `pull_request` jobs now receive no application
+secrets, use `persist-credentials: false`, and perform only a dry scan. A
+separate `pull_request_target` job checks out the trusted base SHA, fetches the
+PR head only as Git data, and runs the trusted CLI when privileged commenting
+is required.
+
 ## Open findings
 
-### [MEDIUM] SR-004 — Workflow artifacts can contain proprietary invention analysis
+### [MEDIUM] SR-005 — Workflow artifacts can contain proprietary invention analysis
 
 - **Category:** OWASP A02 Security Misconfiguration / STRIDE Information Disclosure
 - **Location:** `.github/workflows/ergane.yml`
@@ -74,7 +90,7 @@ state and audit records.
 forbids GitHub Actions artifacts, or replace artifact persistence with an approved
 encrypted system of record.
 
-### [LOW] SR-005 — Direct API credentials remain operator-managed secrets
+### [LOW] SR-006 — Direct API credentials remain operator-managed secrets
 
 - **Category:** OWASP A04 Cryptographic Failures / A09 Logging and Alerting
 - **Location:** GitHub Actions and local environment configuration
