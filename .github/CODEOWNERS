@@ -1,0 +1,7 @@
+# Security-sensitive changes require review by the repository owner.
+* @guglxni
+
+/.github/ @guglxni
+/ergane/privacy.py @guglxni
+/ergane/synthesizer.py @guglxni
+/ergane/notifier.py @guglxni

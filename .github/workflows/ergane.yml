@@ -1,63 +1,111 @@
 name: ergane
+
 on:
   push:
-    branches: [main, develop]
+    branches: [master, main, develop]
   pull_request:
-    branches: [main]
+    branches: [master, main]
+  # This workflow always executes the trusted base revision. It may use the
+  # write-scoped token solely to comment on a pull request.
+  pull_request_target:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ergane-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  scan:
-    runs-on: ubuntu-latest
+  scan-untrusted-pr:
+    if: github.event_name == 'pull_request' && (github.event.repository.private == false || vars.ERGANE_ALLOW_PRIVATE_REPOS == 'true')
     name: Ergane Patent Scan
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
         with:
-          fetch-depth: 50
+          fetch-depth: 0
+          # Do not leave the workflow token in .git/config for PR-controlled code.
+          persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-
-      - name: Install Ergane
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5.4.0
+        with:
+          version: "0.9.25"
+          enable-cache: true
+      - name: Install locked dependencies
+        run: uv sync --locked --all-extras
+      - name: Run credential-free PR scan
         run: |
-          pip install -e ".[dev]"
+          uv run ergane scan --since "origin/${{ github.base_ref }}" --to HEAD --repo . --dry-run
 
-      - name: Run Ergane Scan
+  scan-trusted-pr:
+    # Never check out or execute PR code in this privileged job. The PR head is
+    # fetched only as Git data and analysed by the trusted base-revision CLI.
+    if: github.event_name == 'pull_request_target' && (github.event.repository.private == false || vars.ERGANE_ALLOW_PRIVATE_REPOS == 'true')
+    name: Ergane Trusted PR Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5.4.0
+        with:
+          version: "0.9.25"
+          enable-cache: true
+      - name: Install trusted locked dependencies
+        run: uv sync --locked --all-extras
+      - name: Fetch pull-request head as data
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ERGANE_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: git fetch --no-tags origin "+${ERGANE_PR_HEAD_SHA}:refs/remotes/ergane/pr-head"
+      - name: Analyse and comment using trusted code
+        env:
+          ERGANE_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ERGANE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ERGANE_MODEL: "gpt-5.6-sol"
           ERGANE_NOVELTY_THRESHOLD: "0.4"
+          ERGANE_NOTIFICATION_THRESHOLD: "0.7"
+          ERGANE_ALLOW_PRIVATE_REPOS: ${{ vars.ERGANE_ALLOW_PRIVATE_REPOS || 'false' }}
+          ERGANE_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          # Scan commits since PR base or last tag
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            ergane scan --since "origin/${{ github.base_ref }}" --to "HEAD" --repo . --notify --pr ${{ github.event.number }} --repo-slug ${{ github.repository }}
+          uv run ergane scan --since "$ERGANE_PR_BASE_SHA" --to refs/remotes/ergane/pr-head --repo . --notify --pr ${{ github.event.number }} --repo-slug ${{ github.repository }}
+
+  scan-push:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: Ergane Default-Branch Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5.4.0
+        with:
+          version: "0.9.25"
+          enable-cache: true
+      - name: Install locked dependencies
+        run: uv sync --locked --all-extras
+      - name: Run default-branch dry scan
+        run: |
+          if git rev-parse --verify HEAD~5 >/dev/null 2>&1; then
+            since_ref="HEAD~5"
           else
-            ergane scan --since "HEAD~5" --to "HEAD" --repo . --dry-run
+            since_ref="HEAD"
           fi
-
-      - name: Upload State
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ergane-state
-          path: .github/ergane-state.md
-          if-no-files-found: ignore
-
-      - name: Post PR Comment
-        if: github.event_name == 'pull_request' && success()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = '.github/ergane-state.md';
-            if (fs.existsSync(path)) {
-              const body = fs.readFileSync(path, 'utf8');
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `:brain: **Ergane Patent Scan Complete**\n\n\`\`\`markdown\n${body}\n\`\`\``
-              });
-            }
+          uv run ergane scan --since "$since_ref" --to HEAD --repo . --dry-run
